@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "./components/ui/button";
 import {
   Select,
@@ -6,8 +7,24 @@ import {
   SelectContent,
   SelectItem,
 } from "./components/ui/select";
+import { Skeleton } from "./components/ui/skeleton";
+import { api } from "./lib/api.lib";
 
 export function App() {
+  const semestersQuery = useQuery({
+    queryKey: ["semesters"],
+    queryFn: async () => {
+      const res = await api.api.semesters.$get();
+      return await res.json();
+    },
+    enabled: false,
+    throwOnError: true,
+  });
+
+  const handleFetchSemester = async () => {
+    await semestersQuery.refetch();
+  };
+
   return (
     <main className="flex flex-col gap-4 max-w-3xl mx-auto py-8">
       <h1 className="text-3xl font-bold underline">
@@ -15,15 +32,33 @@ export function App() {
       </h1>
 
       <section className="flex flex-col gap-2 items-start">
-        <Button variant="outline">Fetch Semester</Button>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a semester you want to scrape" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">Semester Ganjil 2025</SelectItem>
-          </SelectContent>
-        </Select>
+        <Button variant="outline" onClick={handleFetchSemester}>
+          Fetch Semester
+        </Button>
+        {!semestersQuery.data && semestersQuery.fetchStatus === "fetching" && (
+          <Skeleton className="h-9 w-full" />
+        )}
+        {semestersQuery.data && (
+          <Select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a semester you want to scrape" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">Semester Ganjil 2025</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        {semestersQuery.data ? (
+          <p>{semestersQuery.data.message}</p>
+        ) : semestersQuery.isError ? (
+          <span>Error: {semestersQuery.error.message}</span>
+        ) : semestersQuery.isLoading ? (
+          <span>Loading...</span>
+        ) : (
+          <span>Not ready ...</span>
+        )}
+
+        <div>{semestersQuery.isFetching ? "Fetching..." : null}</div>
       </section>
 
       <hr />
