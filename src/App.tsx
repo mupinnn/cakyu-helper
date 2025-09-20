@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "./components/ui/button";
 import {
@@ -8,9 +9,12 @@ import {
   SelectItem,
 } from "./components/ui/select";
 import { Skeleton } from "./components/ui/skeleton";
+import { Badge } from "./components/ui/badge";
 import { api } from "./lib/api.lib";
 
 export function App() {
+  const [selectedSemester, setSelectedSemester] = useState<string>();
+
   const semestersQuery = useQuery({
     queryKey: ["semesters"],
     queryFn: async () => {
@@ -21,8 +25,26 @@ export function App() {
     throwOnError: true,
   });
 
+  const schedulesQuery = useQuery({
+    queryKey: ["schedules", selectedSemester],
+    queryFn: async () => {
+      const res = await api.api.schedule.$get({
+        query: {
+          semester: selectedSemester ?? "",
+        },
+      });
+      return await res.json();
+    },
+    enabled: false,
+    throwOnError: true,
+  });
+
   const handleFetchSemester = async () => {
     await semestersQuery.refetch();
+  };
+
+  const handleFetchSchedule = async () => {
+    await schedulesQuery.refetch();
   };
 
   return (
@@ -35,45 +57,69 @@ export function App() {
         <Button variant="outline" onClick={handleFetchSemester}>
           Fetch Semester
         </Button>
-        {!semestersQuery.data && semestersQuery.fetchStatus === "fetching" && (
-          <Skeleton className="h-9 w-full" />
-        )}
-        {semestersQuery.data && (
-          <Select>
+
+        {semestersQuery.data ? (
+          <Select value={selectedSemester} onValueChange={setSelectedSemester}>
             <SelectTrigger>
               <SelectValue placeholder="Select a semester you want to scrape" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1">Semester Ganjil 2025</SelectItem>
+              {semestersQuery.data.semesters.map((semester) => (
+                <SelectItem key={semester.value} value={semester.value}>
+                  {semester.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-        )}
-        {semestersQuery.data ? (
-          <p>{semestersQuery.data.message}</p>
         ) : semestersQuery.isError ? (
-          <span>Error: {semestersQuery.error.message}</span>
+          <span>
+            Error while fetching semesters: {semestersQuery.error.message}
+          </span>
         ) : semestersQuery.isLoading ? (
-          <span>Loading...</span>
-        ) : (
-          <span>Not ready ...</span>
-        )}
-
-        <div>{semestersQuery.isFetching ? "Fetching..." : null}</div>
+          <Skeleton className="h-9 w-full" />
+        ) : null}
       </section>
 
       <hr />
 
-      <section className="flex flex-col gap-2 items-start">
-        <Button variant="outline">Fetch "Semester Ganjil 2025" Schedule</Button>
+      {selectedSemester && (
+        <section className="flex flex-col gap-2 items-start">
+          <Button variant="outline" onClick={handleFetchSchedule}>
+            Fetch "
+            {
+              semestersQuery.data?.semesters.find(
+                (s) => s.value === selectedSemester,
+              )?.label
+            }
+            " Schedule
+          </Button>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="flex flex-col p-4 border border-border-primary rounded space-y-1">
-            <p>Selasa, 9 Sep 2025 - 18.00--20.00 - Kemang/Bali</p>
-            <p>Human-Computer Interaction - HCI07</p>
-            <Button>Add to Google Calendar</Button>
-          </div>
-        </div>
-      </section>
+          {schedulesQuery.data ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {schedulesQuery.data.schedules.map((schedule) => (
+                <div
+                  key={schedule.no}
+                  className="flex flex-col p-4 border border-border-primary rounded space-y-1"
+                >
+                  <Badge variant="secondary">{schedule.room}</Badge>
+                  <p className="text-sm">
+                    {schedule.day}, {schedule.date} - {schedule.startHour}–
+                    {schedule.endHour}
+                  </p>
+                  <p className="font-semibold mb-4">{schedule.subject}</p>
+                  <Button>Add to Google Calendar</Button>
+                </div>
+              ))}
+            </div>
+          ) : schedulesQuery.isError ? (
+            <span>
+              Error while fetching schedules: {schedulesQuery.error.message}
+            </span>
+          ) : schedulesQuery.isLoading ? (
+            <Skeleton className="h-40 w-full" />
+          ) : null}
+        </section>
+      )}
     </main>
   );
 }

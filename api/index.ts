@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { env } from "hono/adapter";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { getSchedules, getSemesters } from "./services";

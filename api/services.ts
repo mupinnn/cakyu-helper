@@ -48,12 +48,32 @@ export async function getSchedules(c: Context, semester: string) {
   const page = await auth(c);
 
   await page.select("#periode", semester);
+  await page.waitForNavigation();
   await page.select("#limit", "100");
   await page.waitForNavigation();
 
-  const schedules = await page.$$eval("td", (td) => {
-    return Array.from(td).map((col) => col.textContent);
+  const schedules = await page.$$eval("tr", (rows) => {
+    return Array.from(rows, (row) => {
+      const columns = row.querySelectorAll("td");
+      return Array.from(columns, (col) => col.innerText);
+    });
   });
 
-  return schedules;
+  const mappedSchedules = schedules
+    .filter((schedule) => schedule.length > 0)
+    .map(
+      ([no, day, date, startHour, endHour, type, subject, material, room]) => ({
+        no,
+        day,
+        date,
+        startHour,
+        endHour,
+        type,
+        subject,
+        material,
+        room,
+      }),
+    );
+
+  return mappedSchedules;
 }
