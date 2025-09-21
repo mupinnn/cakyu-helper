@@ -2,11 +2,12 @@ import { type Context } from "hono";
 import { env } from "hono/adapter";
 import puppeteer from "puppeteer-core";
 
-type Env = {
+export type Env = {
   readonly VITE_API_URL: string;
   readonly SIAKAD_EMAIL: string;
   readonly SIAKAD_PASS: string;
   readonly SIAKAD_URL: string;
+  readonly GOOGLE_CALENDAR_ID: string;
 };
 
 async function auth(c: Context) {
