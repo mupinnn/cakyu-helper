@@ -1,69 +1,30 @@
-# React + TypeScript + Vite
+# Cakyu's SIAKAD Schedule to Google Calendar
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Scrape all per semesters schedule from SIAKAD and add it to Google Calendar. Right now, this project is meant to
+be run locally.
 
-Currently, two official plugins are available:
+## Stacks
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Hono
+- Puppeteer
+- React
+- TypeScript
+- Google Calendar API
 
-## Expanding the ESLint configuration
+## Running locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Copy `.env.example` to `.env.local`
+- Get your Google Calendar ID and set it into `.env.local`
+- Prepare your Google Service Account, and save the file in `/api/credentials.json`
+- Invite your service account email to your calendar
+- Run `bun dev` and `bun dev:server`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## TODO
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- [ ] Rate limit issue when bulk create
+- [ ] Refactor and restructure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## What to improve
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Able to be used widely for other students. In other words, deployed.
+  - Research how to use user's own credentials: email/pass or Google auth that the SIAKAD provided.
