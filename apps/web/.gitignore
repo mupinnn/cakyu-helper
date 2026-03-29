@@ -10,11 +10,6 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-*.local
-.env*
-!.envrc
-!.env.example
-.turbo
 
 # Editor directories and files
 .vscode/*
@@ -26,10 +21,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-

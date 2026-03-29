@@ -8,10 +8,21 @@ export type Env = {
   readonly SIAKAD_PASS: string;
   readonly SIAKAD_URL: string;
   readonly GOOGLE_CALENDAR_ID: string;
+  readonly PUPPETEER_EXECUTABLE_PATH: string;
 };
 
 async function auth(c: Context) {
-  const { SIAKAD_URL, SIAKAD_EMAIL, SIAKAD_PASS } = env<Env>(c);
+  const { SIAKAD_URL, SIAKAD_EMAIL, SIAKAD_PASS, PUPPETEER_EXECUTABLE_PATH } =
+    env<Env>(c);
+  console.log({
+    SIAKAD_URL,
+    SIAKAD_EMAIL,
+    SIAKAD_PASS,
+    exec: process.env.PUPPETEER_EXECUTABLE_PATH,
+    a: process.env,
+    allEnv: env(c),
+    e: PUPPETEER_EXECUTABLE_PATH,
+  });
   const browser = await puppeteer.launch({
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
   });

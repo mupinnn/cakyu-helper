@@ -1,6 +1,6 @@
 {
   description = "Bun development environment";
-  inputs = { nixpkgs.url = "github:NixOs/nixpkgs/release-25.05"; };
+  inputs = { nixpkgs.url = "github:NixOs/nixpkgs/release-25.11"; };
   outputs = { nixpkgs, ... }:
     let
       system = "x86_64-linux";
@@ -8,9 +8,10 @@
     in {
       devShells.${system}.default = pkgs.mkShell {
         packages = [ pkgs.bun pkgs.chromium pkgs.nodejs_22 ];
-
-        PUPPETEER_SKIP_DOWNLOAD = "1";
-        PUPPETEER_EXECUTABLE_PATH = "${pkgs.chromium}/bin/chromium";
+        shellHook = ''
+          export PUPPETEER_SKIP_DOWNLOAD="1"
+          export PUPPETEER_EXECUTABLE_PATH="${pkgs.chromium}/bin/chromium"
+        '';
       };
     };
 }
