@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { select, input, password } from "@inquirer/prompts";
 import puppeteer from "puppeteer-core";
+import type { SchedulePart } from "@cakyu-helper/shared/types";
 import { env } from "./env";
 import { getCurrentWeekDates } from "./utils";
 
@@ -48,18 +49,7 @@ await page.goto(
 
 const schedules = await page.$$eval(".jadwal-content > *", (nodes) => {
   const result = [];
-  let current: {
-    title: string | null;
-    items: Array<{
-      subject: string;
-      subjectCode: string;
-      hour: string;
-      lecturer: string;
-      room: string;
-      session: string;
-      sessionNo: number;
-    }>;
-  } | null = null;
+  let current: SchedulePart | null = null;
 
   for (const node of nodes) {
     if (node.classList.contains("title-hari")) {

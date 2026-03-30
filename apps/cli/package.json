@@ -13,6 +13,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@cakyu-helper/shared": "workspace:*",
     "@inquirer/prompts": "^8.3.2",
     "puppeteer-core": "^24.22.0",
     "zod": "catalog:"

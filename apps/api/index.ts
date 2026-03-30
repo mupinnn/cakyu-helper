@@ -1,96 +1,54 @@
+import fs from "node:fs";
+import path from "node:path";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { env } from "hono/adapter";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { auth, calendar } from "@googleapis/calendar";
-import { getSchedules, getSemesters, type Env } from "./services";
-import credentials from "./credentials.json";
+import type { Schedule } from "@cakyu-helper/shared/types";
+import { env } from "./env";
 
 const app = new Hono();
 
-app.use("/api/*", cors());
+app.use(
+  "/api/*",
+  cors({
+    origin: env.CORS_ORIGIN,
+    credentials: true,
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  }),
+);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const routes = app
-  .get("/api/semesters", async (c) => {
-    const semeserOptions = await getSemesters(c);
-
-    return c.json({
-      semesters: semeserOptions,
+const routes = app.get(
+  "/api/schedules",
+  zValidator(
+    "query",
+    z.object({
+      studyProgram: z.string(),
+    }),
+  ),
+  async (c) => {
+    const { studyProgram } = c.req.valid("query");
+    const filesInData = fs.readdirSync("./data");
+    const scheduleFiles = filesInData.filter((file) => {
+      return path.extname(file).toLowerCase() === ".json";
     });
-  })
-  .get(
-    "/api/schedule",
-    zValidator(
-      "query",
-      z.object({
-        semester: z.string(),
-      }),
-    ),
-    async (c) => {
-      const { semester } = c.req.valid("query");
-      const schedules = await getSchedules(c, semester);
 
-      return c.json({
-        schedules,
-      });
-    },
-  )
-  .post(
-    "/api/calendar",
-    zValidator(
-      "json",
-      z.object({
-        events: z.array(
-          z.object({
-            summary: z.string(),
-            start: z.object({
-              dateTime: z.iso.datetime(),
-              timeZone: z.string(),
-            }),
-            end: z.object({
-              dateTime: z.iso.datetime(),
-              timeZone: z.string(),
-            }),
-          }),
-        ),
-      }),
-    ),
-    async (c) => {
-      const { GOOGLE_CALENDAR_ID } = env<Env>(c);
-      const { events } = c.req.valid("json");
+    const selectedSchedulesFile = scheduleFiles.find((file) =>
+      file.includes(studyProgram),
+    );
+    if (!selectedSchedulesFile)
+      return c.json({ message: "Jadwal tidak ditemukan." }, 404);
 
-      const authClient = new auth.JWT({
-        email: credentials.client_email,
-        key: credentials.private_key,
-        scopes: ["https://www.googleapis.com/auth/calendar"],
-      });
-      const calendarClient = calendar({ version: "v3", auth: authClient });
+    const unparsedSchedules = fs.readFileSync(
+      `./data/${selectedSchedulesFile}`,
+      "utf-8",
+    );
+    const schedules: Schedule = JSON.parse(unparsedSchedules);
 
-      const insertEventPromises = events.map((event) =>
-        calendarClient.events.insert({
-          auth: authClient,
-          calendarId: GOOGLE_CALENDAR_ID,
-          requestBody: event,
-        }),
-      );
-
-      const results = await Promise.allSettled(insertEventPromises);
-
-      results.forEach((result, idx) => {
-        if (result.status === "fulfilled") {
-          console.log(`Event ${idx + 1} created:`, result.value.data.id);
-        } else {
-          console.error(`Error inserting event ${idx + 1}:`, result.reason);
-        }
-      });
-
-      return c.json({
-        message: "Schedules has been added to Google Calendar",
-      });
-    },
-  );
+    return c.json(schedules);
+  },
+);
 
 export type AppType = typeof routes;
 

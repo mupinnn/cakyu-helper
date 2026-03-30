@@ -1,0 +1,14 @@
+{
+  "name": "@cakyu-helper/shared",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./types": "./types.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  }
+}

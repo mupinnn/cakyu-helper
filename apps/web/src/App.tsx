@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { type InferResponseType, type InferRequestType } from "hono/client";
 import dayjs from "dayjs";
 import dayjsCustomParseFormat from "dayjs/plugin/customParseFormat";
+import { ClockIcon, UserIcon, DoorOpenIcon, NotebookIcon } from "lucide-react";
 import { Button } from "./components/ui/button";
 import {
   Select,
@@ -14,168 +15,104 @@ import {
 } from "./components/ui/select";
 import { Skeleton } from "./components/ui/skeleton";
 import { Badge } from "./components/ui/badge";
-import { api } from "./lib/api.lib";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./components/ui/card";
+import { apiClient } from "./lib/api.lib";
 
 import "dayjs/locale/id";
 
 dayjs.extend(dayjsCustomParseFormat);
 
 export function App() {
-  const [selectedSemester, setSelectedSemester] = useState<string>();
-
-  const semestersQuery = useQuery({
-    queryKey: ["semesters"],
-    queryFn: async () => {
-      const res = await api.api.semesters.$get();
-      return await res.json();
-    },
-    enabled: false,
-    throwOnError: true,
-  });
-
   const schedulesQuery = useQuery({
-    queryKey: ["schedules", selectedSemester],
+    queryKey: ["schedules"],
     queryFn: async () => {
-      const res = await api.api.schedule.$get({
-        query: {
-          semester: selectedSemester ?? "",
-        },
+      const response = await apiClient.api.schedules.$get({
+        query: { studyProgram: "Sains Data" },
       });
-      return await res.json();
-    },
-    enabled: false,
-    throwOnError: true,
-  });
-
-  const addAllToGoogleCalendarMutation = useMutation<
-    InferResponseType<typeof api.api.calendar.$post>,
-    Error,
-    InferRequestType<typeof api.api.calendar.$post>["json"]
-  >({
-    mutationKey: ["addAllToCalendar"],
-    mutationFn: async (events) => {
-      const res = await api.api.calendar.$post({
-        json: events,
-      });
-      return await res.json();
-    },
-    onSuccess: (data) => {
-      toast(data.message);
+      if (!response.ok)
+        throw new Error("Terjadi kesalahan ketika mengambil jadwal.");
+      return await response.json();
     },
   });
-
-  const handleFetchSemester = async () => {
-    await semestersQuery.refetch();
-  };
-
-  const handleFetchSchedule = async () => {
-    await schedulesQuery.refetch();
-  };
-
-  const handleAddAllToGoogleCalendar = () => {
-    addAllToGoogleCalendarMutation.mutate({
-      events: [...(schedulesQuery.data?.schedules || [])].map((schedule) => ({
-        summary: `[${schedule.type}] ${schedule.subject} | ${schedule.room}`,
-        start: {
-          dateTime: dayjs(
-            `${schedule.date} ${schedule.startHour}`,
-            "D MMM YYYY HH:mm",
-            "id",
-          ).toISOString(),
-          timeZone: "Asia/Jakarta",
-        },
-        end: {
-          dateTime: dayjs(
-            `${schedule.date} ${schedule.endHour}`,
-            "D MMM YYYY HH:mm",
-            "id",
-          ).toISOString(),
-          timeZone: "Asia/Jakarta",
-        },
-      })),
-    });
-  };
 
   return (
-    <main className="flex flex-col gap-4 max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold underline">
-        Cakyu SIAKAD to Google Calendar{" "}
-      </h1>
+    <main className="3xl:max-w-screen-2xl mx-auto max-w-[1400px] p-4 lg:p-8 flex flex-1 scroll-mt-20 flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Cakyu Class Helper
+        </h1>
+        <p className="text-muted-foreground">
+          A helpful tools for your daily classes chores like filling feedback
+          form :)
+        </p>
+      </div>
 
-      <section className="flex flex-col gap-2 items-start">
-        <Button variant="outline" onClick={handleFetchSemester}>
-          Fetch Semester
-        </Button>
-
-        {semestersQuery.data ? (
-          <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a semester you want to scrape" />
-            </SelectTrigger>
-            <SelectContent>
-              {semestersQuery.data.semesters.map((semester) => (
-                <SelectItem key={semester.value} value={semester.value}>
-                  {semester.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : semestersQuery.isError ? (
-          <span>
-            Error while fetching semesters: {semestersQuery.error.message}
-          </span>
-        ) : semestersQuery.isLoading ? (
-          <Skeleton className="h-9 w-full" />
-        ) : null}
-      </section>
-
-      <hr />
-
-      {selectedSemester && (
-        <section className="flex flex-col gap-2 items-start">
-          <Button variant="outline" onClick={handleFetchSchedule}>
-            Fetch "
-            {
-              semestersQuery.data?.semesters.find(
-                (s) => s.value === selectedSemester,
-              )?.label
-            }
-            " Schedule
-          </Button>
-
-          {schedulesQuery.data ? (
-            <>
-              <Button className="mt-4" onClick={handleAddAllToGoogleCalendar}>
-                Add all to Google Calendar
-              </Button>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {schedulesQuery.data.schedules.map((schedule) => (
-                  <div
-                    key={schedule.no}
-                    className="flex flex-col p-4 border border-border-primary rounded space-y-1"
-                  >
-                    <Badge variant="secondary">{schedule.room}</Badge>
-                    <p className="text-sm">
-                      {schedule.day}, {schedule.date} - {schedule.startHour}–
-                      {schedule.endHour}
-                    </p>
-                    <p className="font-semibold mb-4">{schedule.subject}</p>
-                    <Button onClick={() => toast("Coming soon!")}>
-                      Add to Google Calendar
-                    </Button>
-                  </div>
-                ))}
+      <Tabs defaultValue="Sains Data" className="gap-4">
+        <TabsList>
+          <TabsTrigger value="Sains Data">
+            Sains Data, Profesional (2025)
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="Sains Data">
+          <div className="flex flex-col gap-6">
+            {schedulesQuery.isPending ? (
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-6" />
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                  <Skeleton className="h-40" />
+                </div>
               </div>
-            </>
-          ) : schedulesQuery.isError ? (
-            <span>
-              Error while fetching schedules: {schedulesQuery.error.message}
-            </span>
-          ) : schedulesQuery.isLoading ? (
-            <Skeleton className="h-40 w-full" />
-          ) : null}
-        </section>
-      )}
+            ) : schedulesQuery.isError ? (
+              <p>Terjadi kesalahan.</p>
+            ) : (
+              schedulesQuery.data.schedules.map((schedule) => {
+                return (
+                  <div className="flex flex-col gap-2">
+                    <p className="font-semibold underline flex items-center gap-2">
+                      <div className="size-2 bg-green-500 rounded-full" />{" "}
+                      {schedule.title}
+                    </p>
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                      {schedule.items.map((item) => (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>{item.subject}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="text-sm text-muted-foreground">
+                            <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-2 [&_p]:flex [&_p]:items-center [&_p]:gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
+                              <p>
+                                <ClockIcon /> {item.hour}
+                              </p>
+                              <p>
+                                <UserIcon /> {item.lecturer}
+                              </p>
+                              <p>
+                                <DoorOpenIcon /> {item.room}
+                              </p>
+                              <p>
+                                <NotebookIcon /> {item.session}
+                              </p>
+                            </div>
+
+                            <Button>Isi Feedback</Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </main>
   );
 }
