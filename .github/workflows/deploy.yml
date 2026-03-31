@@ -1,0 +1,59 @@
+name: Build and deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env
+        run: |
+          mkdir -p apps/web
+          echo "${{ secrets.ENV_WEB }}" > ./apps/web/.env
+
+          mkdir -p apps/api
+          echo "${{ secrets.ENV_API }}" > ./apps/api/.env
+
+      - name: Build docker images
+        run: |
+          docker build -t cakyu-helper-web:latest -f apps/web/Dockerfile .
+          docker build -t cakyu-helper-api:latest -f apps/api/Dockerfile .
+
+      - name: Save docker images to tarball
+        run: |
+          docker save -o app-images.tar cakyu-helper-api:latest cakyu-helper-web:latest
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_KEY }}
+          source: "app-images.tar,docker-compose.prod.yml,apps/web/.env,apps/api/.env"
+          target: "~/deploy/cakyu-helper"
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_KEY }}
+          script: |
+            cd ~/deploy/cakyu-helper
+
+            echo "Loading docker images . . ."
+            docker load -i app-images.tar
+
+            echo "Restarting services . . ."
+            docker compose -f docker-compose.prod.yml up -d --no-build --force-recreate
+
+            rm app-images.tar
+
+            docker image prune -f

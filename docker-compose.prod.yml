@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        - NODE_ENV=production
+    env_file: apps/web/.env
+    ports:
+      - "127.0.0.1:5175:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "127.0.0.1:3001:3001"
+    env_file: apps/api/.env
+    restart: unless-stopped
