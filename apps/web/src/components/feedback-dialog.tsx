@@ -112,17 +112,19 @@ export function FeedbackDialog({ trigger, schedule }: FeedbackDialogProps) {
         ongoingSemester: "",
         faculty: "",
         studyProgram: "Sains Data",
-        overallRating: 5,
-        levelOfUnderstanding: 5,
-        feedbackUnderstanding: "-",
-        classInteractivity: 5,
-        lecturerPerformance: 5,
-        feedbackLecturer: "-",
-        customizeFeedbackLecturer: false,
       };
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: parsedPrefillForm,
+    defaultValues: {
+      ...parsedPrefillForm,
+      overallRating: 5,
+      levelOfUnderstanding: 5,
+      feedbackUnderstanding: "-",
+      classInteractivity: 5,
+      lecturerPerformance: 5,
+      feedbackLecturer: "-",
+      customizeFeedbackLecturer: false,
+    },
   });
 
   const overallRating = form.watch("overallRating");
