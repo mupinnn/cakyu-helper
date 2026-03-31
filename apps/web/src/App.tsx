@@ -1,28 +1,19 @@
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { type InferResponseType, type InferRequestType } from "hono/client";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dayjsCustomParseFormat from "dayjs/plugin/customParseFormat";
-import { ClockIcon, UserIcon, DoorOpenIcon, NotebookIcon } from "lucide-react";
+import {
+  ClockIcon,
+  UserIcon,
+  DoorOpenIcon,
+  NotebookIcon,
+  AlertTriangleIcon,
+} from "lucide-react";
 import { Button } from "./components/ui/button";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "./components/ui/select";
 import { Skeleton } from "./components/ui/skeleton";
-import { Badge } from "./components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "./components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
+import { FeedbackDialog } from "./components/feedback-dialog";
+import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { apiClient } from "./lib/api.lib";
 
 import "dayjs/locale/id";
@@ -54,6 +45,32 @@ export function App() {
         </p>
       </div>
 
+      <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+        <AlertTriangleIcon />
+        <AlertTitle>Perhatian!</AlertTitle>
+        <AlertDescription>
+          <p>
+            Untuk saat ini, jadwal yang tertera hanya tersedia untuk kelas Sains
+            Data Profesional Intake September 2025 yang sudah dipaketkan dan
+            tidak termasuk jadwal kelas-kelas semester pendek atau pilihan
+            individu.
+          </p>
+          <p>
+            Jika kalian tertarik ingin menampilkan jadwal kelas kalian, hubungi{" "}
+            <strong>YWhtYWQubXV3YWZmYXFAY2FrcmF3YWxhLmFjLmlk</strong> atau
+            silakan gunakan{" "}
+            <a
+              href="https://github.com/mupinnn/cakyu-helper"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-semibold"
+            >
+              repositori ini.
+            </a>
+          </p>
+        </AlertDescription>
+      </Alert>
+
       <Tabs defaultValue="Sains Data" className="gap-4">
         <TabsList>
           <TabsTrigger value="Sains Data">
@@ -74,14 +91,14 @@ export function App() {
             ) : (
               schedulesQuery.data.schedules.map((schedule) => {
                 return (
-                  <div className="flex flex-col gap-2">
+                  <div key={schedule.title} className="flex flex-col gap-2">
                     <p className="font-semibold underline flex items-center gap-2">
-                      <div className="size-2 bg-green-500 rounded-full" />{" "}
+                      <span className="inline-block size-2 bg-green-500 rounded-full" />{" "}
                       {schedule.title}
                     </p>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                       {schedule.items.map((item) => (
-                        <Card>
+                        <Card key={`${schedule.title}-${item.subject}`}>
                           <CardHeader>
                             <CardTitle>{item.subject}</CardTitle>
                           </CardHeader>
@@ -101,7 +118,10 @@ export function App() {
                               </p>
                             </div>
 
-                            <Button>Isi Feedback</Button>
+                            <FeedbackDialog
+                              trigger={<Button>Isi Feedback</Button>}
+                              schedule={item}
+                            />
                           </CardContent>
                         </Card>
                       ))}

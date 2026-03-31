@@ -24,7 +24,6 @@ console.log(`Mengambil jadwal untuk ${studyProgram}`);
 
 const browser = await puppeteer.launch({
   executablePath: env.PUPPETEER_EXECUTABLE_PATH,
-  headless: false,
 });
 
 const page = await browser.newPage();
@@ -67,7 +66,9 @@ const schedules = await page.$$eval(".jadwal-content > *", (nodes) => {
 
       const subject =
         node.querySelector(".item-title")?.textContent.trim() ?? "";
-      const subjectCode = subject.match(/\(([^()]+)\)/)?.[1] ?? "";
+      const splittedSubject = subject.split(/\(([^()]+)\)/);
+      const cleanSubject = splittedSubject[0] ?? "";
+      const subjectCode = splittedSubject[1] ?? "";
       const hour = node.querySelector(".jam")?.textContent.trim() ?? "";
       const lecturer = node.querySelector(".dosen")?.textContent.trim() ?? "";
       const room = node.querySelector(".ruang")?.textContent.trim() ?? "";
@@ -79,8 +80,8 @@ const schedules = await page.$$eval(".jadwal-content > *", (nodes) => {
           : Number(session[session.length - 1]);
 
       current.items.push({
-        subject,
-        subjectCode,
+        subject: cleanSubject.trim(),
+        subjectCode: subjectCode.trim(),
         hour,
         lecturer,
         room,

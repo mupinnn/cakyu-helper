@@ -4,7 +4,7 @@
       "title": "Senin, 30 Maret 2026",
       "items": [
         {
-          "subject": "Object-Oriented Programming (OOP4)",
+          "subject": "Object-Oriented Programming",
           "subjectCode": "OOP4",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Wahyu Amaldi, M.Kom",
@@ -18,7 +18,7 @@
       "title": "Selasa, 31 Maret 2026",
       "items": [
         {
-          "subject": "Data Structures (DS04)",
+          "subject": "Data Structures",
           "subjectCode": "DS04",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Cantika Nur Previana",
@@ -27,7 +27,7 @@
           "sessionNo": 5
         },
         {
-          "subject": "Data Wrangling (DaWr2)",
+          "subject": "Data Wrangling",
           "subjectCode": "DaWr2",
           "hour": "20:00 - 21:30 WIB",
           "lecturer": "Adam Ginza Amanda Malik",
@@ -41,7 +41,7 @@
       "title": "Rabu, 1 April 2026",
       "items": [
         {
-          "subject": "Database Systems (DB04)",
+          "subject": "Database Systems",
           "subjectCode": "DB04",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
@@ -50,7 +50,7 @@
           "sessionNo": 5
         },
         {
-          "subject": "Data Wrangling (DaWr2)",
+          "subject": "Data Wrangling",
           "subjectCode": "DaWr2",
           "hour": "20:00 - 21:30 WIB",
           "lecturer": "Adam Ginza Amanda Malik",
@@ -64,7 +64,7 @@
       "title": "Kamis, 2 April 2026",
       "items": [
         {
-          "subject": "Data Structures (DS04)",
+          "subject": "Data Structures",
           "subjectCode": "DS04",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Cantika Nur Previana",
@@ -73,7 +73,7 @@
           "sessionNo": 6
         },
         {
-          "subject": "Database Systems (DB04)",
+          "subject": "Database Systems",
           "subjectCode": "DB04",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
@@ -87,7 +87,7 @@
       "title": "Jumat, 3 April 2026",
       "items": [
         {
-          "subject": "Object-Oriented Programming (OOP4)",
+          "subject": "Object-Oriented Programming",
           "subjectCode": "OOP4",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Wahyu Amaldi, M.Kom",
@@ -101,5 +101,5 @@
   "studyProgram": "Sains Data",
   "dateFrom": "2026-03-29",
   "dateTo": "2026-04-04",
-  "updatedAt": "2026-03-30T04:58:56.774Z"
+  "updatedAt": "2026-03-31T07:12:02.511Z"
 }
