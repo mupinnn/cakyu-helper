@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dayjsCustomParseFormat from "dayjs/plugin/customParseFormat";
+import dayjsIsToday from "dayjs/plugin/isToday";
+import dayjsIsBetween from "dayjs/plugin/isBetween";
 import {
   ClockIcon,
   UserIcon,
@@ -15,10 +17,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { FeedbackDialog } from "./components/feedback-dialog";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { apiClient } from "./lib/api.lib";
+import { parseTimeRange } from "./lib/utils";
 
 import "dayjs/locale/id";
 
+dayjs.locale("id-ID");
 dayjs.extend(dayjsCustomParseFormat);
+dayjs.extend(dayjsIsToday);
+dayjs.extend(dayjsIsBetween);
 
 export function App() {
   const schedulesQuery = useQuery({
@@ -45,7 +51,10 @@ export function App() {
         </p>
       </div>
 
-      <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+      <Alert
+        className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50"
+        style={{ wordBreak: "break-word" }}
+      >
         <AlertTriangleIcon />
         <AlertTitle>Perhatian!</AlertTitle>
         <AlertDescription>
@@ -90,41 +99,64 @@ export function App() {
               <p>Terjadi kesalahan.</p>
             ) : (
               schedulesQuery.data.schedules.map((schedule) => {
+                const isToday = dayjs(schedule.title).isToday();
+
                 return (
                   <div key={schedule.title} className="flex flex-col gap-2">
                     <p className="font-semibold underline flex items-center gap-2">
-                      <span className="inline-block size-2 bg-green-500 rounded-full" />{" "}
+                      {isToday && (
+                        <span className="inline-block size-2 bg-green-500 rounded-full" />
+                      )}
                       {schedule.title}
                     </p>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                      {schedule.items.map((item) => (
-                        <Card key={`${schedule.title}-${item.subject}`}>
-                          <CardHeader>
-                            <CardTitle>{item.subject}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="text-sm text-muted-foreground">
-                            <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-2 [&_p]:flex [&_p]:items-center [&_p]:gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
-                              <p>
-                                <ClockIcon /> {item.hour}
-                              </p>
-                              <p>
-                                <UserIcon /> {item.lecturer}
-                              </p>
-                              <p>
-                                <DoorOpenIcon /> {item.room}
-                              </p>
-                              <p>
-                                <NotebookIcon /> {item.session}
-                              </p>
-                            </div>
+                      {schedule.items.map((item) => {
+                        const parsedTimeRange = parseTimeRange(item.hour);
+                        const startMin =
+                          Number(parsedTimeRange?.start.hour) * 60 +
+                          Number(parsedTimeRange?.start.minute);
+                        const endMin =
+                          Number(parsedTimeRange?.end.hour) * 60 +
+                          Number(parsedTimeRange?.end.minute);
+                        const today = new Date();
+                        const nowMin =
+                          today.getHours() * 60 + today.getMinutes();
+                        const isClassStarted =
+                          isToday && nowMin >= startMin && nowMin <= endMin;
 
-                            <FeedbackDialog
-                              trigger={<Button>Isi Feedback</Button>}
-                              schedule={item}
-                            />
-                          </CardContent>
-                        </Card>
-                      ))}
+                        return (
+                          <Card
+                            key={`${schedule.title}-${item.subject}`}
+                            data-started={isClassStarted}
+                            className="data-[started=true]:border-green-500 data-[started=true]:border-2"
+                          >
+                            <CardHeader>
+                              <CardTitle>{item.subject}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="text-sm text-muted-foreground">
+                              <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-2 [&_p]:flex [&_p]:items-center [&_p]:gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
+                                <p>
+                                  <ClockIcon /> {item.hour}
+                                </p>
+                                <p>
+                                  <UserIcon /> {item.lecturer}
+                                </p>
+                                <p>
+                                  <DoorOpenIcon /> {item.room}
+                                </p>
+                                <p>
+                                  <NotebookIcon /> {item.session}
+                                </p>
+                              </div>
+
+                              <FeedbackDialog
+                                trigger={<Button>Isi Feedback</Button>}
+                                schedule={item}
+                              />
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
                   </div>
                 );
