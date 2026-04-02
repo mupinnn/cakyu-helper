@@ -9,6 +9,7 @@ import {
   DoorOpenIcon,
   NotebookIcon,
   AlertTriangleIcon,
+  InfoIcon,
   PresentationIcon,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
@@ -69,7 +70,7 @@ export function App() {
       >
         <AlertTriangleIcon />
         <AlertTitle>Perhatian!</AlertTitle>
-        <AlertDescription>
+        <AlertDescription className="gap-2">
           <p>
             Untuk saat ini, jadwal yang tertera hanya tersedia untuk kelas Sains
             Data Profesional Intake September 2025 yang sudah dipaketkan dan
@@ -92,10 +93,19 @@ export function App() {
         </AlertDescription>
       </Alert>
 
+      <Alert className="border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-50">
+        <InfoIcon />
+        <AlertTitle>Informasi</AlertTitle>
+        <AlertDescription>
+          Jadwal yang ditampilkan adalah jadwal mingguan dan diperbarui setiap
+          hari Minggu.
+        </AlertDescription>
+      </Alert>
+
       <Tabs defaultValue="Sains Data" className="gap-4">
         <TabsList>
           <TabsTrigger value="Sains Data">
-            Sains Data, Profesional (2025)
+            Sains Data, Profesional (Sep 2025)
           </TabsTrigger>
         </TabsList>
         <TabsContent value="Sains Data">
