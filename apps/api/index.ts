@@ -25,14 +25,20 @@ const scheduleQuerySchema = z.object({
   classType: z.enum(choices.classType),
   ongoingSemester: z.enum(choices.ongoingSemester),
   intakeYear: z.enum(choices.intakeYear),
+  intakeMonth: z.enum(choices.intakeMonth),
 });
 
 const routes = app.get(
   "/api/schedules",
   zValidator("query", scheduleQuerySchema),
   async (c) => {
-    const { studyProgram, classType, ongoingSemester, intakeYear } =
-      c.req.valid("query");
+    const {
+      studyProgram,
+      classType,
+      ongoingSemester,
+      intakeYear,
+      intakeMonth,
+    } = c.req.valid("query");
     const filesInData = fs.readdirSync("./data");
     const scheduleFiles = filesInData.filter((file) => {
       return path.extname(file).toLowerCase() === ".json";
@@ -40,7 +46,7 @@ const routes = app.get(
 
     const selectedSchedulesFile = scheduleFiles.find((file) =>
       file.includes(
-        `${studyProgram}-${classType}-${ongoingSemester}-${intakeYear}-schedule`,
+        `${studyProgram}-${classType}-${ongoingSemester}-${intakeMonth}-${intakeYear}-schedule`,
       ),
     );
     if (!selectedSchedulesFile)

@@ -44,6 +44,7 @@ export function App() {
           classType: "Profesional",
           ongoingSemester: "II (Genap)",
           intakeYear: "2025",
+          intakeMonth: "September",
         },
       });
       if (!response.ok)
