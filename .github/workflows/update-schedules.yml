@@ -5,6 +5,10 @@ on:
     - cron: "0 8 * * 0"
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   setup-matrix:
     runs-on: ubuntu-latest
@@ -32,13 +36,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - run: bun install
+
       - name: Scrape schedules
         run: |
-          ./your-cli \
+          cd apps/cli
+          bun fetch:schedules \
             --intakeYear "${{ matrix.config.intakeYear }}" \
             --intakeMonth "${{ matrix.config.intakeMonth }}" \
             --ongoingSemester "${{ matrix.config.ongoingSemester }}" \
             --studyProgram "${{ matrix.config.studyProgram }}" \
             --classType "${{ matrix.config.classType }}" \
-            --email "${{ secrets.SIAKAD_EMAIL }}" \
-            --password "${{ secrets.SIAKAD_PASSWORD }}"
+            --siakadEmail "${{ secrets.SIAKAD_EMAIL }}" \
+            --siakadPassword "${{ secrets.SIAKAD_PASSWORD }}"
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v7
+        id: cpr
+        with:
+          commit-message: "update schedule for ${{ matrix.config.studyProgram }} ${{ matrix.config.classType }} ${{ matrix.config.ongoingSemester }} ${{ matrix.config.intakeMonth }} ${{ matrix.config.intakeYear }}"
+          title: "Automated: update schedule for ${{ matrix.config.studyProgram }} ${{ matrix.config.classType }} ${{ matrix.config.ongoingSemester }} ${{ matrix.config.intakeMonth }} ${{ matrix.config.intakeYear }}"
+          body: "This PR was automatically created by a GitHub Action."
+          branch: "automated-schedule-update-from-${{ matrix.config.environment }}"
+          base: main
+
+      - name: Auto-merge PR
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        run: gh pr merge --auto --squash "${{ steps.cpr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
