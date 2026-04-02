@@ -1,12 +1,10 @@
 name: Build and deploy
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-    paths:
-      - "*"
-      - "!.github/workflows/update-schedules.yml"
 
 jobs:
   deploy:
