@@ -1,0 +1,43 @@
+name: Weekly updates the schedules
+
+on:
+  schedule:
+    - cron: "0 8 * * 0"
+  workflow_dispatch:
+
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+
+    outputs:
+      matrix: ${{ steps.setup-matrix.outputs.matrix }}
+
+    steps:
+      - id: setup-matrix
+        run: |
+          JSON_ARRAY='[{"environment":"student-ahmad-muwaffaq","intakeYear":"2025","intakeMonth":"September","ongoingSemester":"II (Genap)","studyProgram":"Sains Data","classType":"Profesional"},{"environment":"student-ahmad-muwaffaq","intakeYear":"2025","intakeMonth":"Maret","ongoingSemester":"II (Genap)","studyProgram":"Sains Data","classType":"Reguler"}]'
+          echo "matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  update-schedules:
+    needs: setup-matrix
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
+
+    environment: ${{ matrix.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scrape schedules
+        run: |
+          ./your-cli \
+            --intakeYear "${{ matrix.intakeYear }}" \
+            --intakeMonth "${{ matrix.intakeMonth }}" \
+            --ongoingSemester "${{ matrix.ongoingSemester }}" \
+            --studyProgram "${{ matrix.studyProgram }}" \
+            --classType "${{ matrix.classType }}" \
+            --email "${{ secrets.SIAKAD_EMAIL }}" \
+            --password "${{ secrets.SIAKAD_PASSWORD }}"
