@@ -43,6 +43,9 @@ jobs:
       - run: bun install
 
       - name: Scrape schedules
+        env:
+          PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome"
+          SIAKAD_URL: ${{ secrets.SIAKAD_URL }}
         run: |
           cd apps/cli
           bun fetch:schedules \
