@@ -31,7 +31,12 @@ export function App() {
     queryKey: ["schedules"],
     queryFn: async () => {
       const response = await apiClient.api.schedules.$get({
-        query: { studyProgram: "Sains Data" },
+        query: {
+          studyProgram: "Sains Data",
+          classType: "Profesional",
+          ongoingSemester: "II (Genap)",
+          intakeYear: "2025",
+        },
       });
       if (!response.ok)
         throw new Error("Terjadi kesalahan ketika mengambil jadwal.");

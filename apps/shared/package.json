@@ -3,7 +3,8 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./data": "./data.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

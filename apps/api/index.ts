@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { Schedule } from "@cakyu-helper/shared/types";
+import { choices } from "@cakyu-helper/shared/data";
 import { env } from "./env";
 
 const app = new Hono();
@@ -19,23 +20,28 @@ app.use(
   }),
 );
 
+const scheduleQuerySchema = z.object({
+  studyProgram: z.enum(choices.studyProgram),
+  classType: z.enum(choices.classType),
+  ongoingSemester: z.enum(choices.ongoingSemester),
+  intakeYear: z.enum(choices.intakeYear),
+});
+
 const routes = app.get(
   "/api/schedules",
-  zValidator(
-    "query",
-    z.object({
-      studyProgram: z.string(),
-    }),
-  ),
+  zValidator("query", scheduleQuerySchema),
   async (c) => {
-    const { studyProgram } = c.req.valid("query");
+    const { studyProgram, classType, ongoingSemester, intakeYear } =
+      c.req.valid("query");
     const filesInData = fs.readdirSync("./data");
     const scheduleFiles = filesInData.filter((file) => {
       return path.extname(file).toLowerCase() === ".json";
     });
 
     const selectedSchedulesFile = scheduleFiles.find((file) =>
-      file.includes(studyProgram),
+      file.includes(
+        `${studyProgram}-${classType}-${ongoingSemester}-${intakeYear}-schedule`,
+      ),
     );
     if (!selectedSchedulesFile)
       return c.json({ message: "Jadwal tidak ditemukan." }, 404);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ScheduleItem } from "@cakyu-helper/shared/types";
+import { choices } from "@cakyu-helper/shared/data";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -31,7 +32,6 @@ import {
   SelectContent,
   SelectTrigger,
 } from "./ui/select";
-import { choices } from "@/lib/utils";
 
 interface FeedbackDialogProps {
   trigger: React.ReactNode;

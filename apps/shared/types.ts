@@ -6,6 +6,7 @@ export type ScheduleItem = {
   room: string;
   session: string;
   sessionNo: number;
+  type: string;
 };
 
 export type SchedulePart = {
@@ -16,7 +17,10 @@ export type SchedulePart = {
 export type Schedule = {
   schedules: SchedulePart[];
   studyProgram: string;
-  dateFrom: string;
-  dateTo: string;
+  classType: string;
+  intakeYear: string;
+  ongoingSemester: string;
+  dateFrom?: string;
+  dateTo?: string;
   updatedAt: string;
 };

@@ -1,26 +1,38 @@
 import { writeFile } from "node:fs/promises";
 import { select, input, password } from "@inquirer/prompts";
 import puppeteer from "puppeteer-core";
-import type { SchedulePart } from "@cakyu-helper/shared/types";
+import { choices } from "@cakyu-helper/shared/data";
 import { env } from "./env";
-import { getCurrentWeekDates } from "./utils";
+import { getCurrentWeekDates, scheduleParser } from "./utils";
 
 console.log("-- Selamat datang di sistem pengambil jadwal Cakyu --");
 
-const studyProgram = await select({
-  message: "Pilih program studi",
-  choices: [
-    {
-      value: "Sains Data",
-    },
-  ],
+const intakeYear = await select({
+  message: "Angkatan perkuliahan",
+  choices: choices.intakeYear,
 });
-
+const intakeMonth = await select({
+  message: "Bulan intake",
+  choices: choices.intakeMonth,
+});
+const ongoingSemester = await select({
+  message: "Semester berjalan",
+  choices: choices.ongoingSemester,
+});
+const studyProgram = await select({
+  message: "Program studi",
+  choices: choices.studyProgram,
+});
+const classType = await select({
+  message: "Tipe kelas",
+  choices: choices.classType,
+});
 const siakadEmail = await input({ message: "E-mail SIAKAD" });
-
 const siakadPassword = await password({ message: "Password SIAKAD" });
 
-console.log(`Mengambil jadwal untuk ${studyProgram}`);
+console.log(
+  `Mengambil jadwal untuk ${studyProgram} ${classType} semester ${ongoingSemester} intake ${intakeMonth} ${intakeYear}.`,
+);
 
 const browser = await puppeteer.launch({
   executablePath: env.PUPPETEER_EXECUTABLE_PATH,
@@ -40,75 +52,69 @@ await page.waitForNavigation();
 await page.goto(`${env.SIAKAD_URL}/siakad/home`);
 
 const weekDates = getCurrentWeekDates();
+const startDate = weekDates[0];
+const endDate = weekDates[weekDates.length - 1];
 
 await page.goto(
-  `${env.SIAKAD_URL}/siakad/home?show=jadwal&tglawal=${weekDates[0]}&tglakhir=${weekDates[weekDates.length - 1]}`,
+  `${env.SIAKAD_URL}/siakad/home?show=jadwal&tglawal=${startDate}&tglakhir=${endDate}`,
   { waitUntil: "domcontentloaded" },
 );
 
-const schedules = await page.$$eval(".jadwal-content > *", (nodes) => {
-  const result = [];
-  let current: SchedulePart | null = null;
+const courseSchedules = await page.$$eval(
+  ".jadwal-content > *",
+  scheduleParser,
+);
 
-  for (const node of nodes) {
-    if (node.classList.contains("title-hari")) {
-      const title = node.querySelector("p")?.textContent.trim() ?? "";
-      current = { title, items: [] };
-      result.push(current);
-      continue;
-    }
+await page.goto(`${env.SIAKAD_URL}/siakad/home?show=ujian`, {
+  waitUntil: "domcontentloaded",
+});
+const examSchedules = await page.$$eval(
+  ".jadwal-content > .tab-slider--body > *",
+  scheduleParser,
+);
 
-    if (node.classList.contains("item-jadwal")) {
-      if (!current) {
-        current = { title: null, items: [] };
-        result.push(current);
-      }
+for (const exam of examSchedules) {
+  if (!exam.title || !startDate || !endDate) break;
 
-      const subject =
-        node.querySelector(".item-title")?.textContent.trim() ?? "";
-      const splittedSubject = subject.split(/\(([^()]+)\)/);
-      const cleanSubject = splittedSubject[0] ?? "";
-      const subjectCode = splittedSubject[1] ?? "";
-      const hour = node.querySelector(".jam")?.textContent.trim() ?? "";
-      const lecturer = node.querySelector(".dosen")?.textContent.trim() ?? "";
-      const room = node.querySelector(".ruang")?.textContent.trim() ?? "";
-      const session =
-        node.querySelector(".pertemuan")?.textContent.trim() ?? "";
-      const sessionNo =
-        session[session.length - 1] === undefined
-          ? 1
-          : Number(session[session.length - 1]);
+  const matchedCourseScheduleIndex = courseSchedules.findIndex(
+    (course) => course.title === exam.title,
+  );
 
-      current.items.push({
-        subject: cleanSubject.trim(),
-        subjectCode: subjectCode.trim(),
-        hour,
-        lecturer,
-        room,
-        session,
-        sessionNo,
-      });
-    }
+  if (matchedCourseScheduleIndex > 0) {
+    courseSchedules[matchedCourseScheduleIndex]?.items.push(...exam.items);
+    continue;
   }
 
-  return result;
-});
+  const examDate = new Date(exam.title);
+  if (examDate >= new Date(startDate) && examDate <= new Date(endDate)) {
+    courseSchedules.push(exam);
+  }
+}
 
-const fileName = `${studyProgram}`;
-const fileContent = JSON.stringify(
-  {
-    schedules,
-    studyProgram,
-    dateFrom: weekDates[0],
-    dateTo: weekDates[weekDates.length - 1],
-    updatedAt: new Date().toISOString(),
-  },
-  null,
-  2,
+const fileNameTemplate = `${studyProgram}-${classType}-${ongoingSemester}-${intakeYear}`;
+const courseSchedulesFileName = `${fileNameTemplate}-schedule.json`;
+
+await writeFile(
+  `../api/data/${courseSchedulesFileName}`,
+  JSON.stringify(
+    {
+      studyProgram,
+      classType,
+      ongoingSemester,
+      intakeYear,
+      dateFrom: weekDates[0],
+      dateTo: weekDates[weekDates.length - 1],
+      updatedAt: new Date().toISOString(),
+      schedules: courseSchedules,
+    },
+    null,
+    2,
+  ),
+  "utf-8",
 );
-await writeFile(`../api/data/${fileName}.json`, fileContent, "utf-8");
 
-console.log(`Total jadwal: ${schedules.length}`);
-console.log(`Selesai mengambil jadwal untuk ${studyProgram}.`);
+console.log(
+  `Selesai mengambil jadwal untuk ${studyProgram} ${classType} semester ${ongoingSemester} intake ${intakeMonth} ${intakeYear}.`,
+);
 
 await browser.close();

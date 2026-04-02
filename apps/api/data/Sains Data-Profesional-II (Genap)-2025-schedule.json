@@ -1,4 +1,11 @@
 {
+  "studyProgram": "Sains Data",
+  "classType": "Profesional",
+  "ongoingSemester": "II (Genap)",
+  "intakeYear": "2025",
+  "dateFrom": "2026-03-29",
+  "dateTo": "2026-04-04",
+  "updatedAt": "2026-04-02T04:00:38.666Z",
   "schedules": [
     {
       "title": "Senin, 30 Maret 2026",
@@ -10,7 +17,8 @@
           "lecturer": "Wahyu Amaldi, M.Kom",
           "room": "Kemang - Sulawesi",
           "session": "Pertemuan ke 5",
-          "sessionNo": 5
+          "sessionNo": 5,
+          "type": "Kuliah"
         }
       ]
     },
@@ -24,7 +32,8 @@
           "lecturer": "Cantika Nur Previana",
           "room": "Kemang - Computer Lab.",
           "session": "Pertemuan ke 5",
-          "sessionNo": 5
+          "sessionNo": 5,
+          "type": "Kuliah"
         },
         {
           "subject": "Data Wrangling",
@@ -33,7 +42,8 @@
           "lecturer": "Adam Ginza Amanda Malik",
           "room": "Kemang - Sumbawa",
           "session": "Pertemuan ke 5",
-          "sessionNo": 5
+          "sessionNo": 5,
+          "type": "Kuliah"
         }
       ]
     },
@@ -47,16 +57,18 @@
           "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
           "room": "Kemang - Flores",
           "session": "Pertemuan ke 5",
-          "sessionNo": 5
+          "sessionNo": 5,
+          "type": "Kuliah"
         },
         {
           "subject": "Data Wrangling",
           "subjectCode": "DaWr2",
           "hour": "20:00 - 21:30 WIB",
           "lecturer": "Adam Ginza Amanda Malik",
-          "room": "Kemang - Flores",
+          "room": "Kemang - Sumbawa",
           "session": "Pertemuan ke 6",
-          "sessionNo": 6
+          "sessionNo": 6,
+          "type": "Kuliah"
         }
       ]
     },
@@ -70,7 +82,8 @@
           "lecturer": "Cantika Nur Previana",
           "room": "Kemang - Halmahera",
           "session": "Pertemuan ke 6",
-          "sessionNo": 6
+          "sessionNo": 6,
+          "type": "Kuliah"
         },
         {
           "subject": "Database Systems",
@@ -79,7 +92,8 @@
           "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
           "room": "Kemang - Papua",
           "session": "Pertemuan ke 6",
-          "sessionNo": 6
+          "sessionNo": 6,
+          "type": "Kuliah"
         }
       ]
     },
@@ -93,13 +107,11 @@
           "lecturer": "Wahyu Amaldi, M.Kom",
           "room": "Kemang - Computer Lab.",
           "session": "Pertemuan ke 6",
-          "sessionNo": 6
+          "sessionNo": 6,
+          "type": "Kuliah"
         }
       ]
     }
-  ],
-  "studyProgram": "Sains Data",
-  "dateFrom": "2026-03-29",
-  "dateTo": "2026-04-04",
-  "updatedAt": "2026-03-31T07:12:02.511Z"
+  ]
 }
+

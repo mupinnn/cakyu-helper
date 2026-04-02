@@ -1,3 +1,5 @@
+import { type SchedulePart } from "@cakyu-helper/shared/types";
+
 export function formatDateToYYYYMMDD(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -22,4 +24,54 @@ export function getCurrentWeekDates() {
   }
 
   return dates;
+}
+
+export function scheduleParser(nodes: Element[]) {
+  const result = [];
+  let current: SchedulePart | null = null;
+
+  for (const node of nodes) {
+    if (node.classList.contains("title-hari")) {
+      const title = node.querySelector("p")?.textContent.trim() ?? "";
+      current = { title, items: [] };
+      result.push(current);
+      continue;
+    }
+
+    if (node.classList.contains("item-jadwal")) {
+      if (!current) {
+        current = { title: null, items: [] };
+        result.push(current);
+      }
+
+      const subject =
+        node.querySelector(".item-title")?.textContent.trim() ?? "";
+      const splittedSubject = subject.split(/\(([^()]+)\)/);
+      const cleanSubject = splittedSubject[0] ?? "";
+      const subjectCode = splittedSubject[1] ?? "";
+      const hour = node.querySelector(".jam")?.textContent.trim() ?? "";
+      const lecturer = node.querySelector(".dosen")?.textContent.trim() ?? "";
+      const room = node.querySelector(".ruang")?.textContent.trim() ?? "";
+      const session =
+        node.querySelector(".pertemuan")?.textContent.trim() ?? "";
+      const sessionNo =
+        session[session.length - 1] === undefined
+          ? 1
+          : Number(session[session.length - 1]);
+      const type = node.querySelector(".jenis")?.textContent.trim() ?? "Kuliah";
+
+      current.items.push({
+        subject: cleanSubject.trim(),
+        subjectCode: subjectCode.trim(),
+        hour,
+        lecturer,
+        room,
+        session,
+        sessionNo,
+        type,
+      });
+    }
+  }
+
+  return result;
 }
