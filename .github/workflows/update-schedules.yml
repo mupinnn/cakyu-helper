@@ -19,7 +19,7 @@ jobs:
     steps:
       - id: setup-matrix
         run: |
-          JSON_ARRAY='[{"environment":"student-ahmad-muwaffaq","intakeYear":"2025","intakeMonth":"September","ongoingSemester":"II (Genap)","studyProgram":"Sains Data","classType":"Profesional"},{"environment":"student-ahmad-muwaffaq","intakeYear":"2025","intakeMonth":"Maret","ongoingSemester":"II (Genap)","studyProgram":"Sains Data","classType":"Reguler"}]'
+          JSON_ARRAY='[{"environment":"student-ahmad-muwaffaq","intakeYear":"2025","intakeMonth":"September","ongoingSemester":"II (Genap)","studyProgram":"Sains Data","classType":"Profesional"}]'
           echo "matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
   update-schedules:
