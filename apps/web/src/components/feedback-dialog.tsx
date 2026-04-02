@@ -4,6 +4,7 @@ import { choices } from "@cakyu-helper/shared/data";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { InfoIcon } from "lucide-react";
 import {
   Dialog,
   DialogTitle,
@@ -32,6 +33,7 @@ import {
   SelectContent,
   SelectTrigger,
 } from "./ui/select";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface FeedbackDialogProps {
   trigger: React.ReactNode;
@@ -246,12 +248,25 @@ export function FeedbackDialog({ trigger, schedule }: FeedbackDialogProps) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Isi Feedback</DialogTitle>
+          <DialogTitle>
+            Isi Feedback - {schedule.subject} ({schedule.subjectCode})
+          </DialogTitle>
           <DialogDescription>
             Bertujuan untuk membuat <span className="italic">prefill</span> pada
             isian yang repetitif.
           </DialogDescription>
         </DialogHeader>
+
+        <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+          <InfoIcon />
+          <AlertTitle>Perhatian!</AlertTitle>
+          <AlertDescription>
+            Pastikan akun Google yang sedang digunakan sekarang sesuai dengan
+            e-mail yang kalian masukkan di bawah untuk mencegah error. Jika
+            belum, silakan switch account terlebih dahulu.
+          </AlertDescription>
+        </Alert>
+
         <form
           className="space-y-4 overflow-y-auto max-h-[50vh] px-1.5 -mx-1.5 pb-1.5 -mb-1.5"
           id="form"
