@@ -9,11 +9,18 @@ import {
   DoorOpenIcon,
   NotebookIcon,
   AlertTriangleIcon,
+  PresentationIcon,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Skeleton } from "./components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "./components/ui/card";
 import { FeedbackDialog } from "./components/feedback-dialog";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { apiClient } from "./lib/api.lib";
@@ -136,7 +143,9 @@ export function App() {
                             className="data-[started=true]:border-green-500 data-[started=true]:border-2"
                           >
                             <CardHeader>
-                              <CardTitle>{item.subject}</CardTitle>
+                              <CardTitle>
+                                {item.subject} ({item.subjectCode})
+                              </CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm text-muted-foreground">
                               <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-2 [&_p]:flex [&_p]:items-center [&_p]:gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
@@ -152,13 +161,17 @@ export function App() {
                                 <p>
                                   <NotebookIcon /> {item.session}
                                 </p>
+                                <p>
+                                  <PresentationIcon /> {item.type}
+                                </p>
                               </div>
-
+                            </CardContent>
+                            <CardFooter>
                               <FeedbackDialog
                                 trigger={<Button>Isi Feedback</Button>}
                                 schedule={item}
                               />
-                            </CardContent>
+                            </CardFooter>
                           </Card>
                         );
                       })}
