@@ -24,9 +24,10 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
+      matrix:
+        config: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
 
-    environment: ${{ matrix.environment }}
+    environment: ${{ matrix.config.environment }}
 
     steps:
       - uses: actions/checkout@v4
@@ -34,10 +35,10 @@ jobs:
       - name: Scrape schedules
         run: |
           ./your-cli \
-            --intakeYear "${{ matrix.intakeYear }}" \
-            --intakeMonth "${{ matrix.intakeMonth }}" \
-            --ongoingSemester "${{ matrix.ongoingSemester }}" \
-            --studyProgram "${{ matrix.studyProgram }}" \
-            --classType "${{ matrix.classType }}" \
+            --intakeYear "${{ matrix.config.intakeYear }}" \
+            --intakeMonth "${{ matrix.config.intakeMonth }}" \
+            --ongoingSemester "${{ matrix.config.ongoingSemester }}" \
+            --studyProgram "${{ matrix.config.studyProgram }}" \
+            --classType "${{ matrix.config.classType }}" \
             --email "${{ secrets.SIAKAD_EMAIL }}" \
             --password "${{ secrets.SIAKAD_PASSWORD }}"
