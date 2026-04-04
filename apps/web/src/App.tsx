@@ -11,7 +11,9 @@ import {
   AlertTriangleIcon,
   InfoIcon,
   PresentationIcon,
+  CalendarPlusIcon,
 } from "lucide-react";
+import { type ScheduleItem } from "@cakyu-helper/shared/types";
 import { Button } from "./components/ui/button";
 import { Skeleton } from "./components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
@@ -52,6 +54,29 @@ export function App() {
       return await response.json();
     },
   });
+
+  function handleAddToGoogleCalendar(date: string, schedule: ScheduleItem) {
+    const parsedTimeRange = parseTimeRange(schedule.hour);
+    const startDate = new Date(
+      `${date} ${parsedTimeRange?.start?.hour}:${parsedTimeRange?.start?.minute}`,
+    )
+      .toISOString()
+      .replace(/-|:|\.\d+/g, "");
+    const endDate = new Date(
+      `${date} ${parsedTimeRange?.end?.hour}:${parsedTimeRange?.end?.minute}`,
+    )
+      .toISOString()
+      .replace(/-|:|\.\d+/g, "");
+    const googleCalendarURL = new URL(
+      "https://calendar.google.com/calendar/render?action=TEMPLATE",
+    );
+    googleCalendarURL.searchParams.set(
+      "text",
+      `[Kuliah] ${schedule.subject} - ${schedule.room}`,
+    );
+    googleCalendarURL.searchParams.set("dates", `${startDate}/${endDate}`);
+    window.open(googleCalendarURL.toString(), "_blank");
+  }
 
   return (
     <main className="3xl:max-w-screen-2xl mx-auto max-w-[1400px] p-4 lg:p-8 flex flex-1 scroll-mt-20 flex-col gap-4">
@@ -177,11 +202,22 @@ export function App() {
                                 </p>
                               </div>
                             </CardContent>
-                            <CardFooter>
+                            <CardFooter className="gap-2 flex-wrap">
                               <FeedbackDialog
                                 trigger={<Button>Isi Feedback</Button>}
                                 schedule={item}
                               />
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  handleAddToGoogleCalendar(
+                                    schedule.title ?? "",
+                                    item,
+                                  )
+                                }
+                              >
+                                <CalendarPlusIcon /> Tambah ke Google Calendar
+                              </Button>
                             </CardFooter>
                           </Card>
                         );
