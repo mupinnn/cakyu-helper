@@ -3,12 +3,12 @@
   "classType": "Profesional",
   "ongoingSemester": "II (Genap)",
   "intakeYear": "2025",
-  "dateFrom": "2026-04-05",
-  "dateTo": "2026-04-11",
-  "updatedAt": "2026-04-05T10:56:15.143Z",
+  "dateFrom": "2026-04-12",
+  "dateTo": "2026-04-18",
+  "updatedAt": "2026-04-12T08:49:04.435Z",
   "schedules": [
     {
-      "title": "Senin, 6 April 2026",
+      "title": "Senin, 13 April 2026",
       "items": [
         {
           "subject": "Object-Oriented Programming",
@@ -16,14 +16,14 @@
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Wahyu Amaldi, M.Kom",
           "room": "Kemang - Sulawesi",
-          "session": "Pertemuan ke 7",
-          "sessionNo": 7,
+          "session": "Pertemuan ke 9",
+          "sessionNo": 9,
           "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Selasa, 7 April 2026",
+      "title": "Selasa, 14 April 2026",
       "items": [
         {
           "subject": "Data Structures",
@@ -31,8 +31,8 @@
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Cantika Nur Previana",
           "room": "Kemang - Computer Lab.",
-          "session": "Pertemuan ke 7",
-          "sessionNo": 7,
+          "session": "Pertemuan ke 9",
+          "sessionNo": 9,
           "type": "Kuliah"
         },
         {
@@ -41,14 +41,14 @@
           "hour": "20:00 - 21:30 WIB",
           "lecturer": "Adam Ginza Amanda Malik",
           "room": "Kemang - Sumbawa",
-          "session": "Pertemuan ke 7",
-          "sessionNo": 7,
+          "session": "Pertemuan ke 9",
+          "sessionNo": 9,
           "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Rabu, 8 April 2026",
+      "title": "Rabu, 15 April 2026",
       "items": [
         {
           "subject": "Database Systems",
@@ -56,8 +56,8 @@
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
           "room": "Kemang - Flores",
-          "session": "Pertemuan ke 7",
-          "sessionNo": 7,
+          "session": "Pertemuan ke 9",
+          "sessionNo": 9,
           "type": "Kuliah"
         },
         {
@@ -65,50 +65,50 @@
           "subjectCode": "DaWr2",
           "hour": "20:00 - 21:30 WIB",
           "lecturer": "Adam Ginza Amanda Malik",
-          "room": "Online Kemang - Sumbawa",
-          "session": "",
-          "sessionNo": 1,
-          "type": "Ujian Tengah Semester"
+          "room": "Kemang - Sumbawa",
+          "session": "Pertemuan ke 10",
+          "sessionNo": 0,
+          "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Kamis, 9 April 2026",
+      "title": "Kamis, 16 April 2026",
       "items": [
         {
           "subject": "Data Structures",
           "subjectCode": "DS04",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Cantika Nur Previana",
-          "room": "Online Kemang - Halmahera",
-          "session": "",
-          "sessionNo": 1,
-          "type": "Ujian Tengah Semester"
+          "room": "Kemang - Halmahera",
+          "session": "Pertemuan ke 10",
+          "sessionNo": 0,
+          "type": "Kuliah"
         },
         {
           "subject": "Database Systems",
           "subjectCode": "DB04",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
-          "room": "Online Kemang - Papua",
-          "session": "",
-          "sessionNo": 1,
-          "type": "Ujian Tengah Semester"
+          "room": "Kemang - Papua",
+          "session": "Pertemuan ke 10",
+          "sessionNo": 0,
+          "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Jumat, 10 April 2026",
+      "title": "Jumat, 17 April 2026",
       "items": [
         {
           "subject": "Object-Oriented Programming",
           "subjectCode": "OOP4",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Wahyu Amaldi, M.Kom",
-          "room": "Online Kemang - Computer Lab.",
-          "session": "",
-          "sessionNo": 1,
-          "type": "Ujian Tengah Semester"
+          "room": "Kemang - Computer Lab.",
+          "session": "Pertemuan ke 10",
+          "sessionNo": 0,
+          "type": "Kuliah"
         }
       ]
     }
