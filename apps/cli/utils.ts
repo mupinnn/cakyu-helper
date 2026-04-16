@@ -54,10 +54,7 @@ export function scheduleParser(nodes: Element[]) {
       const room = node.querySelector(".ruang")?.textContent.trim() ?? "";
       const session =
         node.querySelector(".pertemuan")?.textContent.trim() ?? "";
-      const sessionNo =
-        session[session.length - 1] === undefined
-          ? 1
-          : Number(session[session.length - 1]);
+      const sessionNo = Number(session.replace(/[^0-9]/g, ""));
       const type = node.querySelector(".jenis")?.textContent.trim() ?? "Kuliah";
 
       current.items.push({

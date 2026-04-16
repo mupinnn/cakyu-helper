@@ -5,7 +5,7 @@
   "intakeYear": "2025",
   "dateFrom": "2026-04-12",
   "dateTo": "2026-04-18",
-  "updatedAt": "2026-04-12T08:49:04.435Z",
+  "updatedAt": "2026-04-16T13:19:33.203Z",
   "schedules": [
     {
       "title": "Senin, 13 April 2026",
@@ -15,7 +15,7 @@
           "subjectCode": "OOP4",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Wahyu Amaldi, M.Kom",
-          "room": "Kemang - Sulawesi",
+          "room": "Perkuliahan Online",
           "session": "Pertemuan ke 9",
           "sessionNo": 9,
           "type": "Kuliah"
@@ -67,7 +67,7 @@
           "lecturer": "Adam Ginza Amanda Malik",
           "room": "Kemang - Sumbawa",
           "session": "Pertemuan ke 10",
-          "sessionNo": 0,
+          "sessionNo": 10,
           "type": "Kuliah"
         }
       ]
@@ -80,9 +80,9 @@
           "subjectCode": "DS04",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Cantika Nur Previana",
-          "room": "Kemang - Halmahera",
+          "room": "Perkuliahan Online",
           "session": "Pertemuan ke 10",
-          "sessionNo": 0,
+          "sessionNo": 10,
           "type": "Kuliah"
         },
         {
@@ -90,9 +90,9 @@
           "subjectCode": "DB04",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
-          "room": "Kemang - Papua",
+          "room": "Perkuliahan Online",
           "session": "Pertemuan ke 10",
-          "sessionNo": 0,
+          "sessionNo": 10,
           "type": "Kuliah"
         }
       ]
@@ -107,10 +107,11 @@
           "lecturer": "Wahyu Amaldi, M.Kom",
           "room": "Kemang - Computer Lab.",
           "session": "Pertemuan ke 10",
-          "sessionNo": 0,
+          "sessionNo": 10,
           "type": "Kuliah"
         }
       ]
     }
   ]
 }
+
