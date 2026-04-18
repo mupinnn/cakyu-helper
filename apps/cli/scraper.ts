@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import puppeteer from "puppeteer-core";
 import { z } from "zod";
 import { env } from "./env";
-import { getCurrentWeekDates, scheduleParser } from "./utils";
+import { getCurrentWeekDates, scheduleParser, subjectParser } from "./utils";
 
 export const RunScraperParamsSchema = z.object({
   intakeYear: z.string(),
@@ -53,14 +53,19 @@ export async function runScraper({
   const startDate = weekDates[0];
   const endDate = weekDates[weekDates.length - 1];
 
+  await page.goto(`${env.SIAKAD_URL}/siakad/list_jadwalkuliah`, {
+    waitUntil: "domcontentloaded",
+  });
+  const subjects = await page.$$eval("tr", subjectParser);
+
   await page.goto(
     `${env.SIAKAD_URL}/siakad/home?show=jadwal&tglawal=${startDate}&tglakhir=${endDate}`,
     { waitUntil: "domcontentloaded" },
   );
-
   const courseSchedules = await page.$$eval(
     ".jadwal-content > *",
     scheduleParser,
+    subjects,
   );
 
   await page.goto(`${env.SIAKAD_URL}/siakad/home?show=ujian`, {
@@ -69,6 +74,7 @@ export async function runScraper({
   const examSchedules = await page.$$eval(
     ".jadwal-content > .tab-slider--body > *",
     scheduleParser,
+    subjects,
   );
 
   for (const exam of examSchedules) {

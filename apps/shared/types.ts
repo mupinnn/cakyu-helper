@@ -1,6 +1,7 @@
 export type ScheduleItem = {
   subject: string;
   subjectCode: string;
+  subjectClassCode: string;
   hour: string;
   lecturer: string;
   room: string;

@@ -180,7 +180,7 @@ export function App() {
                           >
                             <CardHeader>
                               <CardTitle>
-                                {item.subject} ({item.subjectCode})
+                                {item.subject} ({item.subjectClassCode})
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm text-muted-foreground">

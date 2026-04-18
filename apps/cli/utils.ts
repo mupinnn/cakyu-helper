@@ -26,7 +26,34 @@ export function getCurrentWeekDates() {
   return dates;
 }
 
-export function scheduleParser(nodes: Element[]) {
+export function subjectParser(nodes: Element[]) {
+  const weeklySchedules = Array.from(nodes, (node) => {
+    const columns = node.querySelectorAll("td");
+    return Array.from(columns, (col) => col.innerText);
+  });
+
+  const subjects = weeklySchedules
+    .filter(
+      (schedule) =>
+        schedule.length > 0 && !schedule[0]?.includes("Tidak ada jadwal"),
+    )
+    .map(([startHour, endHour, type, subject, material, room, lecturer]) => {
+      const matches = subject?.match(/^(.+?)\s-\s(.+?)\s\((.+?)\)$/);
+      const [, subjectCode, subjectName] = matches ?? [];
+
+      return {
+        subjectName,
+        subjectCode,
+      };
+    });
+
+  return subjects;
+}
+
+export function scheduleParser(
+  nodes: Element[],
+  subjects: { subjectName?: string; subjectCode?: string }[],
+) {
   const result = [];
   let current: SchedulePart | null = null;
 
@@ -47,8 +74,10 @@ export function scheduleParser(nodes: Element[]) {
       const subject =
         node.querySelector(".item-title")?.textContent.trim() ?? "";
       const splittedSubject = subject.split(/\(([^()]+)\)/);
-      const cleanSubject = splittedSubject[0] ?? "";
-      const subjectCode = splittedSubject[1] ?? "";
+      const cleanSubject = (splittedSubject[0] ?? "").trim();
+      const subjectClassCode = (splittedSubject[1] ?? "").trim();
+      const subjectCode =
+        subjects.find((s) => s.subjectName === cleanSubject)?.subjectCode ?? "";
       const hour = node.querySelector(".jam")?.textContent.trim() ?? "";
       const lecturer = node.querySelector(".dosen")?.textContent.trim() ?? "";
       const room = node.querySelector(".ruang")?.textContent.trim() ?? "";
@@ -58,8 +87,9 @@ export function scheduleParser(nodes: Element[]) {
       const type = node.querySelector(".jenis")?.textContent.trim() ?? "Kuliah";
 
       current.items.push({
-        subject: cleanSubject.trim(),
-        subjectCode: subjectCode.trim(),
+        subject: cleanSubject,
+        subjectClassCode,
+        subjectCode,
         hour,
         lecturer,
         room,

@@ -211,9 +211,9 @@ export function FeedbackDialog({ trigger, schedule }: FeedbackDialogProps) {
     prefilledURL.searchParams.set(entry.studyProgram, data.studyProgram);
     prefilledURL.searchParams.set(
       entry.subject,
-      choices.subject.find((s) => s.includes(schedule.subject)) ?? "",
+      choices.subject.find((s) => s.includes(schedule.subjectCode)) ?? "",
     );
-    prefilledURL.searchParams.set(entry.classCode, schedule.subjectCode);
+    prefilledURL.searchParams.set(entry.classCode, schedule.subjectClassCode);
     prefilledURL.searchParams.set(entry.lecturer, schedule.lecturer);
     prefilledURL.searchParams.set(
       entry.session,
@@ -249,7 +249,7 @@ export function FeedbackDialog({ trigger, schedule }: FeedbackDialogProps) {
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
-            Isi Feedback - {schedule.subject} ({schedule.subjectCode})
+            Isi Feedback - {schedule.subject} ({schedule.subjectClassCode})
           </DialogTitle>
           <DialogDescription>
             Bertujuan untuk membuat <span className="italic">prefill</span> pada
