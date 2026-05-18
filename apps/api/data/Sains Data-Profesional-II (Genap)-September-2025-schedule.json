@@ -3,77 +3,93 @@
   "classType": "Profesional",
   "ongoingSemester": "II (Genap)",
   "intakeYear": "2025",
-  "dateFrom": "2026-05-03",
-  "dateTo": "2026-05-09",
-  "updatedAt": "2026-05-03T09:24:15.053Z",
+  "dateFrom": "2026-05-17",
+  "dateTo": "2026-05-23",
+  "updatedAt": "2026-05-17T09:49:02.908Z",
   "schedules": [
     {
-      "title": "Senin, 4 Mei 2026",
+      "title": "Senin, 18 Mei 2026",
       "items": [
         {
-          "subject": "Object-Oriented Programming",
-          "subjectClassCode": "OOP4",
-          "subjectCode": "CIK2108",
+          "subject": "Statistical Thinking",
+          "subjectClassCode": "Stat2",
+          "subjectCode": "",
+          "hour": "18:15 - 20:00 WIB",
+          "lecturer": "Ridwan Idham, S.Si., M.M.",
+          "room": "Kemang - Sumatera",
+          "session": "Pertemuan ke 1",
+          "sessionNo": 1,
+          "type": "Kuliah"
+        },
+        {
+          "subject": "Web Client Development",
+          "subjectClassCode": "WCD04",
+          "subjectCode": "",
           "hour": "20:00 - 22:00 WIB",
-          "lecturer": "Wahyu Amaldi, M.Kom",
-          "room": "Kemang - Sulawesi",
-          "session": "Pertemuan ke 15",
-          "sessionNo": 15,
+          "lecturer": "Reza Fahmi Alviandy",
+          "room": "Kemang - Bali",
+          "session": "Pertemuan ke 1",
+          "sessionNo": 1,
           "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Selasa, 5 Mei 2026",
+      "title": "Selasa, 19 Mei 2026",
       "items": [
         {
-          "subject": "Data Structures",
-          "subjectClassCode": "DS04",
-          "subjectCode": "CIK2109",
+          "subject": "Communication Protocols",
+          "subjectClassCode": "ComP2",
+          "subjectCode": "",
           "hour": "18:15 - 20:00 WIB",
-          "lecturer": "Cantika Nur Previana",
-          "room": "Kemang - Computer Lab.",
-          "session": "Pertemuan ke 15",
-          "sessionNo": 15,
-          "type": "Kuliah"
-        },
-        {
-          "subject": "Data Wrangling",
-          "subjectClassCode": "DaWr2",
-          "subjectCode": "SDA2138",
-          "hour": "20:00 - 21:30 WIB",
-          "lecturer": "Adam Ginza Amanda Malik",
-          "room": "Kemang - Sumbawa",
-          "session": "Pertemuan ke 15",
-          "sessionNo": 15,
-          "type": "Kuliah"
-        }
-      ]
-    },
-    {
-      "title": "Rabu, 6 Mei 2026",
-      "items": [
-        {
-          "subject": "Database Systems",
-          "subjectClassCode": "DB04",
-          "subjectCode": "SDA2133",
-          "hour": "18:15 - 20:00 WIB",
-          "lecturer": "Lawrence Adi Supriyono, S.Kom, M.T.",
+          "lecturer": "Haikal Shiddiq, S.Kom., M.T.",
           "room": "Kemang - Flores",
-          "session": "Pertemuan ke 15",
-          "sessionNo": 15,
+          "session": "Pertemuan ke 1",
+          "sessionNo": 1,
+          "type": "Kuliah"
+        }
+      ]
+    },
+    {
+      "title": "Rabu, 20 Mei 2026",
+      "items": [
+        {
+          "subject": "Web Client Development",
+          "subjectClassCode": "WCD04",
+          "subjectCode": "",
+          "hour": "18:15 - 20:00 WIB",
+          "lecturer": "Reza Fahmi Alviandy",
+          "room": "Kemang - Papua",
+          "session": "Pertemuan ke 2",
+          "sessionNo": 2,
+          "type": "Kuliah"
+        }
+      ]
+    },
+    {
+      "title": "Kamis, 21 Mei 2026",
+      "items": [
+        {
+          "subject": "Statistical Thinking",
+          "subjectClassCode": "Stat2",
+          "subjectCode": "",
+          "hour": "18:15 - 20:00 WIB",
+          "lecturer": "Ridwan Idham, S.Si., M.M.",
+          "room": "Kemang - Nias",
+          "session": "Pertemuan ke 2",
+          "sessionNo": 2,
           "type": "Kuliah"
         },
         {
-          "subject": "Data Wrangling",
-          "subjectClassCode": "DaWr2",
-          "subjectCode": "SDA2138",
-          "hour": "20:00 - 21:30 WIB",
-          "lecturer": "Adam Ginza Amanda Malik",
-          "room": "Online Kemang - Sumbawa",
-          "session": "",
-          "sessionNo": 0,
-          "type": "Ujian Akhir Semester"
+          "subject": "Communication Protocols",
+          "subjectClassCode": "ComP2",
+          "subjectCode": "",
+          "hour": "20:00 - 22:00 WIB",
+          "lecturer": "Haikal Shiddiq, S.Kom., M.T.",
+          "room": "Kemang - Computer Lab.",
+          "session": "Pertemuan ke 2",
+          "sessionNo": 2,
+          "type": "Kuliah"
         }
       ]
     }
