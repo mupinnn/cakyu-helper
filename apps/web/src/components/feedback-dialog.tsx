@@ -177,7 +177,7 @@ export function FeedbackDialog({ trigger, schedule }: FeedbackDialogProps) {
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     const formURL =
-      "https://docs.google.com/forms/d/e/1FAIpQLSeWAQC5mb-yqO1Kjpey7XtXrjMv9Sahuir8K9cFA3msMFFw0Q/viewform";
+      "https://docs.google.com/forms/d/e/1FAIpQLSc61cA2ZaOzGi3pQQz3_xhzh4XQwHbKaOOhLt1DuBuMmC0k_A/viewform";
     const entry = {
       email: "emailAddress",
       name: "entry.1272053221",
@@ -211,7 +211,9 @@ export function FeedbackDialog({ trigger, schedule }: FeedbackDialogProps) {
     prefilledURL.searchParams.set(entry.studyProgram, data.studyProgram);
     prefilledURL.searchParams.set(
       entry.subject,
-      choices.subject.find((s) => s.includes(schedule.subjectCode)) ?? "",
+      choices.subject.find((s) => s.includes(schedule.subject)) ||
+        choices.subject.find((s) => s.includes(schedule.subjectCode)) ||
+        "",
     );
     prefilledURL.searchParams.set(entry.classCode, schedule.subjectClassCode);
     prefilledURL.searchParams.set(entry.lecturer, schedule.lecturer);
