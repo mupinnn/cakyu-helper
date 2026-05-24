@@ -3,92 +3,92 @@
   "classType": "Profesional",
   "ongoingSemester": "II (Genap)",
   "intakeYear": "2025",
-  "dateFrom": "2026-05-17",
-  "dateTo": "2026-05-23",
-  "updatedAt": "2026-05-17T09:49:02.908Z",
+  "dateFrom": "2026-05-24",
+  "dateTo": "2026-05-30",
+  "updatedAt": "2026-05-24T09:56:27.747Z",
   "schedules": [
     {
-      "title": "Senin, 18 Mei 2026",
+      "title": "Senin, 25 Mei 2026",
       "items": [
         {
           "subject": "Statistical Thinking",
           "subjectClassCode": "Stat2",
-          "subjectCode": "",
+          "subjectCode": "SDA2136",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Ridwan Idham, S.Si., M.M.",
           "room": "Kemang - Sumatera",
-          "session": "Pertemuan ke 1",
-          "sessionNo": 1,
+          "session": "Pertemuan ke 3",
+          "sessionNo": 3,
           "type": "Kuliah"
         },
         {
           "subject": "Web Client Development",
           "subjectClassCode": "WCD04",
-          "subjectCode": "",
+          "subjectCode": "CIK2110",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Reza Fahmi Alviandy",
           "room": "Kemang - Bali",
-          "session": "Pertemuan ke 1",
-          "sessionNo": 1,
+          "session": "Pertemuan ke 3",
+          "sessionNo": 3,
           "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Selasa, 19 Mei 2026",
+      "title": "Selasa, 26 Mei 2026",
       "items": [
         {
           "subject": "Communication Protocols",
           "subjectClassCode": "ComP2",
-          "subjectCode": "",
+          "subjectCode": "SDA2137",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Haikal Shiddiq, S.Kom., M.T.",
           "room": "Kemang - Flores",
-          "session": "Pertemuan ke 1",
-          "sessionNo": 1,
+          "session": "Pertemuan ke 3",
+          "sessionNo": 3,
           "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Rabu, 20 Mei 2026",
+      "title": "Rabu, 27 Mei 2026",
       "items": [
         {
           "subject": "Web Client Development",
           "subjectClassCode": "WCD04",
-          "subjectCode": "",
+          "subjectCode": "CIK2110",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Reza Fahmi Alviandy",
           "room": "Kemang - Papua",
-          "session": "Pertemuan ke 2",
-          "sessionNo": 2,
+          "session": "Pertemuan ke 4",
+          "sessionNo": 4,
           "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Kamis, 21 Mei 2026",
+      "title": "Kamis, 28 Mei 2026",
       "items": [
         {
           "subject": "Statistical Thinking",
           "subjectClassCode": "Stat2",
-          "subjectCode": "",
+          "subjectCode": "SDA2136",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Ridwan Idham, S.Si., M.M.",
           "room": "Kemang - Nias",
-          "session": "Pertemuan ke 2",
-          "sessionNo": 2,
+          "session": "Pertemuan ke 4",
+          "sessionNo": 4,
           "type": "Kuliah"
         },
         {
           "subject": "Communication Protocols",
           "subjectClassCode": "ComP2",
-          "subjectCode": "",
+          "subjectCode": "SDA2137",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Haikal Shiddiq, S.Kom., M.T.",
           "room": "Kemang - Computer Lab.",
-          "session": "Pertemuan ke 2",
-          "sessionNo": 2,
+          "session": "Pertemuan ke 4",
+          "sessionNo": 4,
           "type": "Kuliah"
         }
       ]
