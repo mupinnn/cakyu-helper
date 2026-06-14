@@ -3,12 +3,12 @@
   "classType": "Profesional",
   "ongoingSemester": "II (Genap)",
   "intakeYear": "2025",
-  "dateFrom": "2026-06-07",
-  "dateTo": "2026-06-13",
-  "updatedAt": "2026-06-07T10:32:05.972Z",
+  "dateFrom": "2026-06-14",
+  "dateTo": "2026-06-20",
+  "updatedAt": "2026-06-14T10:50:44.792Z",
   "schedules": [
     {
-      "title": "Senin, 8 Juni 2026",
+      "title": "Senin, 15 Juni 2026",
       "items": [
         {
           "subject": "Statistical Thinking",
@@ -17,8 +17,8 @@
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Ridwan Idham, S.Si., M.M.",
           "room": "Kemang - Sumatera",
-          "session": "Pertemuan ke 7",
-          "sessionNo": 7,
+          "session": "Pertemuan ke 9",
+          "sessionNo": 9,
           "type": "Kuliah"
         },
         {
@@ -28,41 +28,14 @@
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Reza Fahmi Alviandy",
           "room": "Kemang - Bali",
-          "session": "Pertemuan ke 7",
-          "sessionNo": 7,
+          "session": "Pertemuan ke 9",
+          "sessionNo": 9,
           "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Selasa, 9 Juni 2026",
-      "items": [
-        {
-          "subject": "Communication Protocols",
-          "subjectClassCode": "ComP2",
-          "subjectCode": "SDA2137",
-          "hour": "18:15 - 20:00 WIB",
-          "lecturer": "Haikal Shiddiq, S.Kom., M.T.",
-          "room": "Kemang - Flores",
-          "session": "Pertemuan ke 7",
-          "sessionNo": 7,
-          "type": "Kuliah"
-        },
-        {
-          "subject": "Statistical Thinking",
-          "subjectClassCode": "Stat2",
-          "subjectCode": "SDA2136",
-          "hour": "20:00 - 22:00 WIB",
-          "lecturer": "Ridwan Idham, S.Si., M.M.",
-          "room": "Perkuliahan Online",
-          "session": "Pertemuan ke 5",
-          "sessionNo": 5,
-          "type": "Kuliah"
-        }
-      ]
-    },
-    {
-      "title": "Rabu, 10 Juni 2026",
+      "title": "Rabu, 17 Juni 2026",
       "items": [
         {
           "subject": "Web Client Development",
@@ -70,15 +43,15 @@
           "subjectCode": "CIK2110",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Reza Fahmi Alviandy",
-          "room": "Online Kemang - Papua",
-          "session": "",
-          "sessionNo": 0,
-          "type": "Ujian Tengah Semester"
+          "room": "Kemang - Papua",
+          "session": "Pertemuan ke 10",
+          "sessionNo": 10,
+          "type": "Kuliah"
         }
       ]
     },
     {
-      "title": "Kamis, 11 Juni 2026",
+      "title": "Kamis, 18 Juni 2026",
       "items": [
         {
           "subject": "Statistical Thinking",
@@ -86,10 +59,10 @@
           "subjectCode": "SDA2136",
           "hour": "18:15 - 20:00 WIB",
           "lecturer": "Ridwan Idham, S.Si., M.M.",
-          "room": "Online Kemang - Nias",
-          "session": "",
-          "sessionNo": 0,
-          "type": "Ujian Tengah Semester"
+          "room": "Kemang - Nias",
+          "session": "Pertemuan ke 10",
+          "sessionNo": 10,
+          "type": "Kuliah"
         },
         {
           "subject": "Communication Protocols",
@@ -97,10 +70,10 @@
           "subjectCode": "SDA2137",
           "hour": "20:00 - 22:00 WIB",
           "lecturer": "Haikal Shiddiq, S.Kom., M.T.",
-          "room": "Online Kemang - Computer Lab.",
-          "session": "",
-          "sessionNo": 0,
-          "type": "Ujian Tengah Semester"
+          "room": "Kemang - Computer Lab.",
+          "session": "Pertemuan ke 10",
+          "sessionNo": 10,
+          "type": "Kuliah"
         }
       ]
     }
