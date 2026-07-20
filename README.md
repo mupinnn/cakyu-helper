@@ -46,6 +46,40 @@ Run these commands inside `apps/web` directory or using Bun workspace filter fea
 | --------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `bun fetch:schedules` | Scrape schedule by providing study program and your credentials to login to SIAKAD (academic information system) |
 
+## Deployment
+
+Production deploys run through [parachute](https://github.com/mupinnn/parachute). Pushes to `main` (including merged schedule-update PRs) trigger GitHub Actions to build and push images to GHCR, then notify the parachute daemon over Tailscale.
+
+The app is served at `https://cakyu-helper.13121957.xyz`. Only the `web` container is publicly routed; nginx proxies `/api/` to the internal API service.
+
+### GitHub secrets
+
+| Secret | Purpose |
+| --- | --- |
+| `PARACHUTE_URL` | Tailnet URL of the parachute daemon (e.g. `http://100.x.y.z:8787`) |
+| `PARACHUTE_DEPLOY_TOKEN` | Bearer token matching `deploy_token` in parachute config |
+| `TS_OAUTH_CLIENT_ID` | Tailscale OAuth client ID for ephemeral CI tailnet join |
+| `TS_OAUTH_SECRET` | Tailscale OAuth secret |
+
+These replace the old `SERVER_*`, `ENV_WEB`, and `ENV_API` secrets.
+
+### Server setup (one-time)
+
+Set the API CORS origin on the parachute host:
+
+```bash
+parachute secret set cakyu-helper CORS_ORIGIN='https://cakyu-helper.13121957.xyz'
+```
+
+### Cutover from the old SCP deploy
+
+After the first successful parachute deploy:
+
+1. Verify the site and `/api/schedules` work at `https://cakyu-helper.13121957.xyz`.
+2. Tear down the old stack: `cd ~/deploy/cakyu-helper && docker compose -f docker-compose.prod.yml down`
+3. Remove or disable any host-level reverse proxy that conflicts with Traefik on `:80`/`:443`.
+4. Remove obsolete GitHub secrets (`SERVER_HOST`, `SERVER_USERNAME`, `SERVER_KEY`, `ENV_WEB`, `ENV_API`).
+
 ## Contributing
 
 As per now there's no automated way to contribute because of the limitation of our SIAKAD and the current implementation,

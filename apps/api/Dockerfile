@@ -19,7 +19,8 @@ RUN bun turbo build
 FROM base AS runner
 WORKDIR /app
 COPY --from=builder /app/apps/api/cakyu-helper-api ./cakyu-helper-api
+COPY --from=builder /app/apps/api/data ./data
 
-EXPOSE 3000
+EXPOSE 3001
 CMD ["./cakyu-helper-api"]
 

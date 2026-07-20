@@ -9,6 +9,8 @@ COPY . .
 RUN turbo prune "@cakyu-helper/web" --docker
 
 FROM base AS builder
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 COPY --from=prepare /app/out/json/ .
 COPY --from=prepare /app/out/bun.lock ./bun.lock
 

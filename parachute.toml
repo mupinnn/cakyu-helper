@@ -1,0 +1,14 @@
+name = "cakyu-helper"
+type = "compose"
+
+web_service = "web"
+hostnames = ["cakyu-helper.13121957.xyz"]
+web_port = 80
+
+[service_secrets]
+api = ["CORS_ORIGIN"]
+
+[health]
+path = "/healthz"
+retries = 3
+start_period_seconds = 5

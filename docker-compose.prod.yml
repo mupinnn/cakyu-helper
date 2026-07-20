@@ -1,24 +1,18 @@
 services:
   web:
+    image: ghcr.io/mupinnn/cakyu-helper/web:${IMAGE_TAG}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        - NODE_ENV=production
-    env_file: apps/web/.env
-    ports:
-      - "127.0.0.1:5175:80"
+        VITE_API_URL: ""
     depends_on:
       - api
     restart: unless-stopped
 
   api:
+    image: ghcr.io/mupinnn/cakyu-helper/api:${IMAGE_TAG}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    ports:
-      - "127.0.0.1:3001:3001"
-    env_file: apps/api/.env
     restart: unless-stopped
-    volumes:
-      - ./apps/api/data:/app/data
