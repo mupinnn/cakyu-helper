@@ -80,8 +80,8 @@ const SCHOOL_BY_MAJOR: Record<string, string> = {
 };
 
 export const CUSTOM_SOURCE = "custom" as const;
-export const CUSTOM_LABEL = "Simpan jawaban saya";
-export const UNBOUND_LABEL = "Isi di Google Form";
+export const CUSTOM_LABEL = "Custom mapping";
+export const UNMAPPED_LABEL = "Unmapped";
 
 export function sourceLabel(id: DataSource): string {
   if (id === CUSTOM_SOURCE) return CUSTOM_LABEL;

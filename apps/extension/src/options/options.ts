@@ -28,10 +28,9 @@ async function render(): Promise<void> {
   ($("semester") as HTMLInputElement).value = profile.semester;
 
   const extrasWrap = $("extras");
-  const extrasEmpty = $("extrasEmpty");
   extrasWrap.replaceChildren();
   const extras = customMappings(config.mappings, profile.school);
-  extrasEmpty.hidden = extras.length > 0;
+  $("customSection").hidden = extras.length === 0;
   for (const mapping of extras) {
     const key = customKeyOf(mapping);
     const label = document.createElement("label");

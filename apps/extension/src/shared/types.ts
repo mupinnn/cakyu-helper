@@ -82,9 +82,17 @@ export type ResolvedField = {
   confidence: MatchConfidence;
 };
 
+export type DialogDefaults = {
+  sessionChoice?: string;
+  delivery?: SessionContext["delivery"];
+  ratings?: RatingPayload;
+  customizeLecturer?: boolean;
+};
+
 export type ExtensionStorage = {
   formUrl?: string;
   profile?: StudentProfile;
   mappingOverrides?: Record<string, FieldMapping[]>;
   publishedDefault?: FormConfig;
+  dialogDefaults?: DialogDefaults;
 };

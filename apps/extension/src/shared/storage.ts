@@ -2,6 +2,7 @@ import bundledDefault from "./default-mapping.json";
 import { DEFAULT_MAPPING_URL } from "./sources";
 import { emptyProfile, extractFormId } from "./mapping";
 import type {
+  DialogDefaults,
   ExtensionStorage,
   FieldMapping,
   FormConfig,
@@ -26,6 +27,7 @@ export async function readStorage(): Promise<ExtensionStorage> {
     "profile",
     "mappingOverrides",
     "publishedDefault",
+    "dialogDefaults",
   ]) as Promise<ExtensionStorage>;
 }
 
@@ -58,7 +60,7 @@ export async function loadFormConfig(): Promise<FormConfig> {
   const formId = extractFormId(url) ?? bundled.formId;
   const override = stored.mappingOverrides?.[formId];
 
-  if (override?.length) {
+  if (Array.isArray(override)) {
     return {
       formId,
       formUrl: url,
@@ -118,6 +120,30 @@ export async function resetMappingOverride(formId: string): Promise<void> {
 
 export async function saveFormUrl(formUrl: string): Promise<void> {
   await writeStorage({ formUrl });
+}
+
+export async function loadMappingsForForm(
+  formId: string,
+): Promise<FieldMapping[]> {
+  const stored = await readStorage();
+  const override = stored.mappingOverrides?.[formId];
+  if (Array.isArray(override)) return override;
+  if (stored.publishedDefault?.formId === formId) {
+    return stored.publishedDefault.mappings;
+  }
+  if (formId === bundled.formId) return bundled.mappings;
+  return [];
+}
+
+export async function loadDialogDefaults(): Promise<DialogDefaults> {
+  const stored = await readStorage();
+  return stored.dialogDefaults ?? {};
+}
+
+export async function saveDialogDefaults(
+  defaults: DialogDefaults,
+): Promise<void> {
+  await writeStorage({ dialogDefaults: defaults });
 }
 
 export { bundled as bundledDefault, DEFAULT_MAPPING_URL };

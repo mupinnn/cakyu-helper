@@ -28,6 +28,16 @@ fieldset {
   border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px;
   margin: 0 0 12px;
 }
+fieldset.priority {
+  border-color: #149FC4;
+  background: #f0fbfd;
+}
+fieldset.priority legend { color: #0e7490; }
+.priority-hint {
+  font-size: 12px;
+  color: #0e7490;
+  margin: 0 0 10px;
+}
 legend { font-weight: 650; padding: 0 6px; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4a5568; margin-bottom: 10px; }
 .field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4a5568; margin-bottom: 10px; }

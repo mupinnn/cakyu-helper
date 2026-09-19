@@ -8,14 +8,12 @@ import {
   CUSTOM_LABEL,
   CUSTOM_SOURCE,
   DATA_SOURCES,
-  UNBOUND_LABEL,
+  UNMAPPED_LABEL,
   inferSourceFromTitle,
   isMappingSource,
-  mappingSourceLabel,
 } from "../shared/sources";
 import {
-  bundledDefault,
-  loadFormConfig,
+  loadMappingsForForm,
   saveFormUrl,
   saveMappingOverride,
 } from "../shared/storage";
@@ -51,7 +49,9 @@ function css(): string {
   }
   .primary { background: #149FC4; color: #fff; border-color: #149FC4; }
   .item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-bottom: 6px; font-size: 12px; }
+  .item.unmapped { border-style: dashed; }
   .item strong { display: block; margin-bottom: 4px; }
+  .item select { width: 100%; margin-top: 4px; }
   .status { font-size: 12px; color: #0f766e; min-height: 16px; }
   .pop {
     position: fixed; z-index: 2147483647; background: #fff; color: #1a202c;
@@ -88,10 +88,10 @@ function selectedSourceValue(mapping?: FieldMapping): string {
 
 function sourceSelect(current?: string): HTMLSelectElement {
   const select = document.createElement("select");
-  const unbound = document.createElement("option");
-  unbound.value = "";
-  unbound.textContent = UNBOUND_LABEL;
-  select.append(unbound);
+  const unmapped = document.createElement("option");
+  unmapped.value = "";
+  unmapped.textContent = UNMAPPED_LABEL;
+  select.append(unmapped);
 
   const custom = document.createElement("option");
   custom.value = CUSTOM_SOURCE;
@@ -147,6 +147,10 @@ function toMapping(
   };
 }
 
+function liveFormUrl(): string {
+  return location.href.split("?")[0] ?? location.href;
+}
+
 async function boot(): Promise<void> {
   if (document.getElementById(PANEL_ID)) return;
 
@@ -165,12 +169,11 @@ async function boot(): Promise<void> {
   panel.hidden = true;
   panel.innerHTML = `
     <h1>Cakyu Helper — Map form</h1>
-    <p>Hubungkan pertanyaan ke data yang sudah ada, atau simpan jawabanmu sendiri. Tidak perlu rebuild ekstensi.</p>
+    <p>Hubungkan pertanyaan form ini ke field di dialog Isi Feedback, atau Custom mapping.</p>
     <div class="row">
-      <button type="button" class="primary" data-act="use">Pakai form ini</button>
       <button type="button" data-act="auto">Auto-map</button>
       <button type="button" data-act="pick">Mode klik</button>
-      <button type="button" data-act="save">Simpan</button>
+      <button type="button" class="primary" data-act="save">Simpan</button>
     </div>
     <div class="status" data-status></div>
     <div data-list></div>
@@ -179,7 +182,7 @@ async function boot(): Promise<void> {
   document.documentElement.append(host);
 
   let mappingMode = false;
-  let mappings: FieldMapping[] = (await loadFormConfig()).mappings;
+  let mappings: FieldMapping[] = [];
   const status = panel.querySelector("[data-status]") as HTMLElement;
   const list = panel.querySelector("[data-list]") as HTMLElement;
   let popover: HTMLElement | null = null;
@@ -193,65 +196,97 @@ async function boot(): Promise<void> {
     return extractFormId(location.href);
   }
 
+  function keepLive(next: FieldMapping[]): FieldMapping[] {
+    const known = new Set(parsedQuestions().map((question) => question.entryId));
+    return next.filter((mapping) => known.has(mapping.entryId));
+  }
+
+  async function reloadLiveMappings(): Promise<void> {
+    const formId = liveFormId();
+    mappings = keepLive(formId ? await loadMappingsForForm(formId) : []);
+  }
+
+  function applySource(question: ParsedFormQuestion, source: string): void {
+    const existing = mappings.find((mapping) => mapping.entryId === question.entryId);
+    if (!source) {
+      mappings = mappings.filter((mapping) => mapping.entryId !== question.entryId);
+      renderList();
+      return;
+    }
+    if (isMappingSource(source)) {
+      upsert(toMapping(question, source, existing));
+    }
+  }
+
+  function renderQuestionRow(question: ParsedFormQuestion, mapped?: FieldMapping): HTMLElement {
+    const item = document.createElement("div");
+    item.className = mapped ? "item" : "item unmapped";
+    const title = document.createElement("strong");
+    title.textContent = question.title;
+    const select = sourceSelect(selectedSourceValue(mapped));
+    select.addEventListener("change", () => {
+      applySource(question, select.value);
+    });
+    item.append(title, select);
+    return item;
+  }
+
   function renderList(): void {
     list.replaceChildren();
     const questions = parsedQuestions();
-    const byEntry = new Map(mappings.map((item) => [item.entryId, item]));
-    const bound = mappings.filter((item) => item.source);
-    const unbound = questions.filter((question) => !byEntry.has(question.entryId));
-
-    const boundHeader = document.createElement("h2");
-    boundHeader.textContent = "Terhubung";
-    list.append(boundHeader);
-    if (!bound.length) {
+    if (!questions.length) {
       const empty = document.createElement("div");
       empty.className = "item";
-      empty.textContent = "Belum ada. Pakai Auto-map atau Mode klik.";
+      empty.textContent = "Tidak ketemu pertanyaan di halaman ini.";
       list.append(empty);
-    }
-    for (const mapping of bound) {
-      const item = document.createElement("div");
-      item.className = "item";
-      const title = document.createElement("strong");
-      title.textContent = mapping.title;
-      const meta = document.createElement("div");
-      meta.textContent = mappingSourceLabel(mapping.source);
-      item.append(title, meta);
-      list.append(item);
+      return;
     }
 
-    if (unbound.length) {
-      const unboundHeader = document.createElement("h2");
-      unboundHeader.textContent = "Belum terhubung";
-      list.append(unboundHeader);
-      for (const question of unbound) {
-        const item = document.createElement("div");
-        item.className = "item";
-        const title = document.createElement("strong");
-        title.textContent = question.title;
-        const meta = document.createElement("div");
-        meta.textContent = UNBOUND_LABEL;
-        item.append(title, meta);
-        list.append(item);
+    const byEntry = new Map(mappings.map((item) => [item.entryId, item]));
+    const unmapped = questions.filter((question) => !byEntry.has(question.entryId));
+    const mapped = questions.filter((question) => byEntry.has(question.entryId));
+
+    if (unmapped.length) {
+      const header = document.createElement("h2");
+      header.textContent = "Unmapped";
+      list.append(header);
+      for (const question of unmapped) {
+        list.append(renderQuestionRow(question));
+      }
+    }
+
+    if (mapped.length) {
+      const header = document.createElement("h2");
+      header.textContent = "Mapped";
+      list.append(header);
+      for (const question of mapped) {
+        list.append(renderQuestionRow(question, byEntry.get(question.entryId)));
       }
     }
   }
 
-  function upsert(partial: FieldMapping): void {
+  function upsert(partial: FieldMapping, refresh = true): void {
     const index = mappings.findIndex((item) => item.entryId === partial.entryId);
     if (index >= 0) {
       mappings[index] = { ...mappings[index], ...partial };
     } else {
       mappings = [...mappings, partial];
     }
-    renderList();
+    if (refresh) renderList();
   }
 
   async function persist(): Promise<void> {
-    const config = await loadFormConfig();
-    const formId = liveFormId() ?? extractFormId(config.formUrl) ?? config.formId;
-    await saveMappingOverride(formId, mappings);
-    status.textContent = "Mapping disimpan di browser ini.";
+    const formId = liveFormId();
+    if (!formId) {
+      status.textContent = "URL form ini tidak dikenali.";
+      return;
+    }
+    const live = keepLive(mappings);
+    await saveMappingOverride(formId, live);
+    await saveFormUrl(liveFormUrl());
+    mappings = live;
+    status.textContent = "Mapping disimpan. Form ini dipakai di dialog Isi Feedback.";
+    renderList();
   }
 
   fab.addEventListener("click", () => {
@@ -260,25 +295,9 @@ async function boot(): Promise<void> {
       mappingMode = false;
       setHighlight(false);
       popover?.remove();
-    } else {
-      renderList();
-    }
-  });
-
-  panel.querySelector('[data-act="use"]')?.addEventListener("click", async () => {
-    const formId = liveFormId();
-    if (!formId) {
-      status.textContent = "URL form ini tidak dikenali.";
       return;
     }
-    await saveFormUrl(location.href.split("?")[0] ?? location.href);
-    const config = await loadFormConfig();
-    mappings = config.formId === formId ? config.mappings : [];
-    if (formId !== bundledDefault.formId && !mappings.length) {
-      mappings = [];
-    }
-    status.textContent = "Form ini dipakai. Jalankan Auto-map jika field-nya baru.";
-    renderList();
+    void reloadLiveMappings().then(renderList);
   });
 
   panel.querySelector('[data-act="auto"]')?.addEventListener("click", () => {
@@ -287,31 +306,28 @@ async function boot(): Promise<void> {
       status.textContent = "Tidak ketemu data pertanyaan di halaman ini.";
       return;
     }
-    const liveId = liveFormId();
-    if (liveId && liveId !== bundledDefault.formId) {
-      const known = new Set(questions.map((question) => question.entryId));
-      const onlyLive = mappings.filter((mapping) => known.has(mapping.entryId));
-      mappings = onlyLive;
-    }
+    mappings = keepLive(mappings);
     const byEntry = new Map(mappings.map((item) => [item.entryId, item]));
     for (const question of questions) {
       const previous = byEntry.get(question.entryId);
       const inferred = inferSourceFromTitle(question.title);
       if (inferred) {
-        upsert(toMapping(question, inferred, previous));
+        upsert(toMapping(question, inferred, previous), false);
       } else if (previous) {
-        upsert({
-          ...previous,
-          title: question.title,
-          type: question.type,
-          choices: question.choices ?? previous.choices,
-        });
-      } else if (question.type === "text" || question.type === "paragraph") {
-        upsert(toMapping(question, CUSTOM_SOURCE, previous));
+        upsert(
+          {
+            ...previous,
+            title: question.title,
+            type: question.type,
+            choices: question.choices ?? previous.choices,
+          },
+          false,
+        );
       }
     }
+    renderList();
     status.textContent =
-      "Auto-map selesai. Cek daftar, lalu Simpan. Pertanyaan pilihan yang belum kenal diisi di Google Form.";
+      "Auto-map selesai. Field yang belum kenal tetap Unmapped — pilih Custom mapping jika perlu, lalu Simpan.";
   });
 
   panel.querySelector('[data-act="pick"]')?.addEventListener("click", () => {
@@ -362,13 +378,7 @@ async function boot(): Promise<void> {
       save.textContent = "Simpan";
       save.style.marginTop = "8px";
       save.addEventListener("click", () => {
-        const source = select.value;
-        if (!source) {
-          mappings = mappings.filter((mapping) => mapping.entryId !== hit.entryId);
-          renderList();
-        } else if (isMappingSource(source)) {
-          upsert(toMapping(hit, source, existing));
-        }
+        applySource(hit, select.value);
         popover?.remove();
         popover = null;
       });
@@ -380,8 +390,6 @@ async function boot(): Promise<void> {
     },
     true,
   );
-
-  renderList();
 }
 
 void boot();

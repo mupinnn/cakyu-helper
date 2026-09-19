@@ -28,6 +28,11 @@ section {
   padding: 14px;
   margin: 14px 0;
 }
+section.priority {
+  border-color: #149FC4;
+  background: #f0fbfd;
+}
+section.priority h2 { color: #0e7490; }
 
 label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4a5568; margin-bottom: 10px; }
 input {

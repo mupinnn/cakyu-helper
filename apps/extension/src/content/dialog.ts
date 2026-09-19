@@ -13,8 +13,16 @@ import {
   inferSchoolFromMajor,
   inferSemester,
 } from "../shared/sources";
-import { loadFormConfig, loadProfile, saveProfile } from "../shared/storage";
+import {
+  loadDialogDefaults,
+  loadFormConfig,
+  loadProfile,
+  saveDialogDefaults,
+  saveFormUrl,
+  saveProfile,
+} from "../shared/storage";
 import type {
+  DialogDefaults,
   FormConfig,
   RatingPayload,
   SessionContext,
@@ -116,7 +124,33 @@ function seedProfile(
   return { nim, major, school, enrollmentYear, semester, extras: stored.extras ?? {} };
 }
 
+function sessionChoiceValue(
+  sessionChoices: string[],
+  sessionNo: number,
+  last?: string,
+): string {
+  if (last && (!sessionChoices.length || sessionChoices.includes(last))) {
+    return last;
+  }
+  return (
+    sessionChoices.find((choice) => choice.startsWith(String(sessionNo))) ??
+    String(sessionNo)
+  );
+}
+
+function deliveryValue(
+  sessionDelivery: SessionContext["delivery"],
+  deliveryChoices: string[],
+  last?: SessionContext["delivery"],
+): string {
+  if (last && (!deliveryChoices.length || deliveryChoices.includes(last))) {
+    return last;
+  }
+  return sessionDelivery;
+}
+
 function readForm(root: ShadowRoot): {
+  formUrl: string;
   profile: StudentProfile;
   sessionPatch: Pick<
     SessionContext,
@@ -148,6 +182,7 @@ function readForm(root: ShadowRoot): {
   }
 
   return {
+    formUrl: value("formUrl").trim(),
     profile: {
       nim: value("nim"),
       enrollmentYear: value("enrollmentYear"),
@@ -186,7 +221,9 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
 
   const config = await loadFormConfig();
   const profile = seedProfile(await loadProfile(), session, config);
-  const ratings = emptyRatings();
+  const defaults = await loadDialogDefaults();
+  const ratings = defaults.ratings ?? emptyRatings();
+  const customizeLecturer = Boolean(defaults.customizeLecturer);
 
   const host = el("div", { id: HOST_ID });
   const shadow = host.attachShadow({ mode: "open" });
@@ -216,6 +253,16 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
   const yearChoices = choicesFor(config.mappings, "student.enrollmentYear", "");
   const semesterChoices = choicesFor(config.mappings, "student.semester", "");
 
+  const formUrlInput = input("formUrl", config.formUrl, "url");
+  formUrlInput.setAttribute(
+    "placeholder",
+    "https://docs.google.com/forms/d/e/...",
+  );
+  const urlSet = el("fieldset", {}, [
+    el("legend", {}, ["Google Form"]),
+    field("URL form", formUrlInput),
+  ]);
+
   const studentSet = el("fieldset", {}, [
     el("legend", {}, ["Data mahasiswa"]),
     el("div", { class: "grid" }, [
@@ -243,6 +290,17 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
   const classChoices = choicesFor(config.mappings, "schedule.classCode", profile.school);
   const lecturerChoices = choicesFor(config.mappings, "schedule.lecturer", profile.school);
 
+  const chosenSession = sessionChoiceValue(
+    sessionChoices,
+    session.sessionNo,
+    defaults.sessionChoice,
+  );
+  const chosenDelivery = deliveryValue(
+    session.delivery,
+    deliveryChoices,
+    defaults.delivery,
+  );
+
   const sessionSet = el("fieldset", {}, [
     el("legend", {}, ["Sesi kelas"]),
     el("div", { class: "grid" }, [
@@ -263,17 +321,15 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
       ),
       field(
         "Pertemuan",
-        select(
-          "session",
-          sessionChoices.find((choice) =>
-            choice.startsWith(String(session.sessionNo)),
-          ) ?? String(session.sessionNo),
-          sessionChoices,
-        ),
+        select("session", chosenSession, sessionChoices),
       ),
       field(
         "Online / Offline",
-        select("delivery", session.delivery, deliveryChoices.length ? deliveryChoices : [session.delivery]),
+        select(
+          "delivery",
+          chosenDelivery,
+          deliveryChoices.length ? deliveryChoices : [chosenDelivery],
+        ),
       ),
     ]),
   ]);
@@ -282,10 +338,11 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
     type: "checkbox",
     name: "customizeLecturer",
   }) as HTMLInputElement;
+  customize.checked = customizeLecturer;
   const lecturerFeedback = el("textarea", {
     name: "feedbackLecturer",
   }, [ratings.feedbackLecturer]) as HTMLTextAreaElement;
-  lecturerFeedback.disabled = true;
+  lecturerFeedback.disabled = !customize.checked;
 
   customize.addEventListener("change", () => {
     lecturerFeedback.disabled = !customize.checked;
@@ -313,8 +370,11 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
   ]);
 
   const extras = customMappings(config.mappings, profile.school);
-  const extraSet = el("fieldset", {}, [
-    el("legend", {}, ["Jawaban tersimpan"]),
+  const extraSet = el("fieldset", { class: "priority" }, [
+    el("legend", {}, ["Custom mapping"]),
+    el("p", { class: "priority-hint" }, [
+      "Diprioritaskan — diisi di RISE, dipakai saat Google Form terbuka.",
+    ]),
   ]);
   for (const mapping of extras) {
     const key = customKeyOf(mapping);
@@ -342,9 +402,9 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
   ]);
   actions.firstElementChild?.addEventListener("click", () => closeDialog());
 
-  form.append(studentSet, sessionSet, ratingSet);
+  form.append(urlSet);
   if (extras.length) form.append(extraSet);
-  form.append(warning, actions);
+  form.append(studentSet, sessionSet, ratingSet, warning, actions);
   panel.append(form);
   overlay.append(panel);
   shadow.append(overlay);
@@ -397,10 +457,22 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
       return;
     }
 
+    if (parsed.formUrl) await saveFormUrl(parsed.formUrl);
+
+    const nextDefaults: DialogDefaults = {
+      sessionChoice: parsed.sessionPatch.sessionChoice,
+      delivery: parsed.sessionPatch.delivery,
+      ratings: parsed.ratings,
+      customizeLecturer: parsed.customizeLecturer,
+    };
+    await saveDialogDefaults(nextDefaults);
+
     await saveProfile({
       ...parsed.profile,
       extras: { ...profile.extras, ...parsed.profile.extras },
     });
+
+    const liveConfig = await loadFormConfig();
 
     const patchedSession: SessionContext = {
       ...session,
@@ -411,7 +483,7 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
     };
 
     const resolved = resolveMappings(
-      config,
+      liveConfig,
       parsed.profile,
       patchedSession,
       parsed.ratings,
@@ -452,7 +524,7 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
         .join(", ")}. Pilih dari dropdown di atas, atau lanjutkan dan isi manual di Google Form.`;
     }
 
-    const url = buildPrefillUrl(config.formUrl, resolved);
+    const url = buildPrefillUrl(liveConfig.formUrl, resolved);
     window.open(url, "_blank", "noopener");
     closeDialog();
   });
