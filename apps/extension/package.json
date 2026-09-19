@@ -1,0 +1,14 @@
+{
+  "name": "@cakyu-helper/extension",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "bun run build.ts",
+    "generate:mapping": "bun run scripts/generate-default-mapping.ts"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.24",
+    "typescript": "catalog:"
+  }
+}

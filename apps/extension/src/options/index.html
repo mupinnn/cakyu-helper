@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cakyu Helper</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Cakyu Helper</h1>
+      <p class="lead">
+        Prefill Google Form feedback dari sesi RISE. Data mahasiswa dan mapping
+        disimpan hanya di browser ini.
+      </p>
+
+      <section>
+        <h2>Google Form</h2>
+        <label>
+          URL form
+          <input id="formUrl" type="url" placeholder="https://docs.google.com/forms/d/e/..." />
+        </label>
+        <div class="row">
+          <button id="saveForm" type="button">Simpan URL</button>
+          <button id="refreshDefault" type="button" class="ghost">
+            Ambil mapping default
+          </button>
+          <button id="resetOverride" type="button" class="ghost">
+            Reset mapping ke default
+          </button>
+        </div>
+        <p id="formStatus" class="status"></p>
+      </section>
+
+      <section>
+        <h2>Profil mahasiswa</h2>
+        <div class="grid">
+          <label>NIM <input id="nim" /></label>
+          <label>Major / Prodi <input id="major" /></label>
+          <label>School <input id="school" /></label>
+          <label>Tahun angkatan <input id="enrollmentYear" /></label>
+          <label>Semester <input id="semester" /></label>
+        </div>
+        <button id="saveProfile" type="button">Simpan profil</button>
+        <p id="profileStatus" class="status"></p>
+      </section>
+
+      <section>
+        <h2>Mapping saat ini</h2>
+        <p class="hint">
+          Buka Google Form, lalu pakai tombol <strong>Map form</strong> untuk
+          klik-bind pertanyaan baru. Override di bawah menang jika default belum
+          di-update.
+        </p>
+        <pre id="mappingPreview"></pre>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

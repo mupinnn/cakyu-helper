@@ -6,12 +6,13 @@ A helpful tools for Cakranians daily classes chores like filling feedback form :
 
 This project is built on top of monorepo powered by Turborepo with these packages:
 
-| Package                | Description                                                                                                                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `@cakyu-helper/cli`    | A CLI app to scrape student schedule from SIAKAD (academic information system) by providing their study program, email, and password. The scraped schedules will saved to JSON file. |
-| `@cakyu-helper/shared` | Shared things between packages.                                                                                                                                                      |
-| `@cakyu-helper/api`    | A Hono app that as an API to provide the scraped schedules. It uses Hono RPC, so it's type-safe.                                                                                     |
-| `@cakyu-helper/web`    | A React app that serve the UI and consume `@cakyu-helper/api`. Showing schedules and prefilled link generator for the feedback form.                                                 |
+| Package                    | Description                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@cakyu-helper/cli`        | A CLI app to scrape student schedule from SIAKAD (academic information system) by providing their study program, email, and password. The scraped schedules will saved to JSON file. |
+| `@cakyu-helper/shared`     | Shared things between packages.                                                                                                                                                      |
+| `@cakyu-helper/api`        | A Hono app that as an API to provide the scraped schedules. It uses Hono RPC, so it's type-safe.                                                                                     |
+| `@cakyu-helper/web`        | Landing page, install notes, and hosted default Google Form mapping.                                                                                                                 |
+| `@cakyu-helper/extension`  | Chromium/Brave extension: injects **Isi Feedback** on RISE session cards and prefills the lecture Google Form. Students can remap fields themselves.                                 |
 
 If you're using Nix and `nix-direnv`, just run `direnv allow` and everything will be setup. If not,
 make sure Bun at least v1.3.3 in your system.
@@ -26,7 +27,11 @@ Cakranians would know the value.
 | Command         | Description                                                                |
 | --------------- | -------------------------------------------------------------------------- |
 | `bun run dev`   | Run the development server for `@cakyu-helper/api` and `@cakyu-helper/web` |
-| `bun run build` | Build `@cakyu-helper/api` as compiled binary and `@cakyu-helper/web`       |
+| `bun run build` | Build `@cakyu-helper/api`, `@cakyu-helper/web`, and `@cakyu-helper/extension` |
+
+#### `@cakyu-helper/extension`
+
+See [`apps/extension/README.md`](apps/extension/README.md). Load unpacked from `apps/extension/dist` in Chrome or Brave. The SIAKAD scraper is frozen; live class data now comes from RISE in the student’s browser.
 
 #### `@cakyu-helper/web` commands
 
