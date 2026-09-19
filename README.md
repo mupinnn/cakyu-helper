@@ -31,7 +31,7 @@ Cakranians would know the value.
 
 #### `@cakyu-helper/extension`
 
-See [`apps/extension/README.md`](apps/extension/README.md). Load unpacked from `apps/extension/dist` in Chrome or Brave. The SIAKAD scraper is frozen; live class data now comes from RISE in the student’s browser.
+See [`apps/extension/README.md`](apps/extension/README.md). Students download a zip from [the landing page](https://cakyu-helper.13121957.xyz) (GitHub Release assets + SHA-256) and load unpacked in Chrome or Brave. Contributors can still clone and build from `apps/extension/dist`. The SIAKAD scraper is frozen; live class data now comes from RISE in the student’s browser.
 
 #### `@cakyu-helper/web` commands
 
@@ -53,9 +53,20 @@ Run these commands inside `apps/web` directory or using Bun workspace filter fea
 
 ## Deployment
 
-Production deploys run through [parachute](https://github.com/mupinnn/parachute). Pushes to `main` (including merged schedule-update PRs) trigger GitHub Actions to build and push images to GHCR, then notify the parachute daemon over Tailscale.
+Production deploys run through [parachute](https://github.com/mupinnn/parachute). Pushes to `main` trigger GitHub Actions to build and push images to GHCR, then notify the parachute daemon over Tailscale. The weekly SIAKAD schedule-update workflow is disabled.
 
 The app is served at `https://cakyu-helper.13121957.xyz`. Only the `web` container is publicly routed; nginx proxies `/api/` to the internal API service.
+
+### Releasing the extension
+
+Extension zips are **not** published on every `main` push. After merging:
+
+```bash
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+Or run **Actions → Release → Run workflow** with `version` (e.g. `1.0.0`) on `main`. The workflow stamps `apps/extension/manifest.json`, zips `dist`, writes `SHA256SUMS`, and creates a GitHub Release. The landing page picks up new releases from the GitHub API (no site redeploy).
 
 ### GitHub secrets
 

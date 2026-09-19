@@ -5,6 +5,7 @@ import {
   CardTitle,
   CardContent,
 } from "./components/ui/card";
+import { DownloadExtension } from "./components/download-extension";
 
 export function App() {
   return (
@@ -19,28 +20,14 @@ export function App() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="md:col-span-2">
           <CardHeader>
             <PuzzleIcon className="text-muted-foreground" />
             <CardTitle>Pasang ekstensi</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground space-y-2">
-            <p>Chrome atau Brave, mode developer:</p>
-            <ol className="list-decimal pl-4 space-y-1">
-              <li>
-                Clone repo lalu build{" "}
-                <code className="text-foreground">apps/extension</code>
-              </li>
-              <li>
-                Buka <code className="text-foreground">chrome://extensions</code>{" "}
-                atau <code className="text-foreground">brave://extensions</code>
-              </li>
-              <li>
-                Load unpacked folder{" "}
-                <code className="text-foreground">apps/extension/dist</code>
-              </li>
-            </ol>
+            <DownloadExtension />
           </CardContent>
         </Card>
         <Card>

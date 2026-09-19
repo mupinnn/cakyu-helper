@@ -2,7 +2,22 @@
 
 Chromium/Brave extension that injects **Isi Feedback** on RISE session cards and prefills the lecture Google Form.
 
-## Install (Load unpacked)
+## Install
+
+Download the latest zip from [cakyu-helper.13121957.xyz](https://cakyu-helper.13121957.xyz) (or [GitHub Releases](https://github.com/mupinnn/cakyu-helper/releases)). Optionally verify the checksum:
+
+```bash
+sha256sum -c SHA256SUMS
+```
+
+Then:
+
+1. Unzip the archive
+2. Open `brave://extensions` or `chrome://extensions`
+3. Enable **Developer mode**
+4. **Load unpacked** → select the extracted folder (`cakyu-helper-vX.Y.Z`)
+
+## Install from source
 
 1. Build from the repo root:
 
