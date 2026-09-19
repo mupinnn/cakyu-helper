@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Cakyu Helper",
+  "version": "1.0.0",
+  "description": "Prefill lecture feedback Google Forms from RISE session cards.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://rise.cakrawala.ac.id/*",
+    "https://docs.google.com/forms/*",
+    "https://cakyu-helper.13121957.xyz/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Cakyu Helper",
+    "default_popup": "options.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://rise.cakrawala.ac.id/*"],
+      "js": ["rise.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://docs.google.com/forms/*"],
+      "js": ["forms.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

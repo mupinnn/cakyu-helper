@@ -1,100 +1,70 @@
-import { useQuery } from "@tanstack/react-query";
-import dayjs from "dayjs";
-import dayjsCustomParseFormat from "dayjs/plugin/customParseFormat";
-import dayjsIsToday from "dayjs/plugin/isToday";
-import dayjsIsBetween from "dayjs/plugin/isBetween";
-import {
-  ClockIcon,
-  UserIcon,
-  DoorOpenIcon,
-  NotebookIcon,
-  AlertTriangleIcon,
-  InfoIcon,
-  PresentationIcon,
-  CalendarPlusIcon,
-} from "lucide-react";
-import { type ScheduleItem } from "@cakyu-helper/shared/types";
-import { Button } from "./components/ui/button";
-import { Skeleton } from "./components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import { PuzzleIcon, MapIcon, GraduationCapIcon } from "lucide-react";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-  CardFooter,
 } from "./components/ui/card";
-import { FeedbackDialog } from "./components/feedback-dialog";
-import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
-import { apiClient } from "./lib/api.lib";
-import { parseTimeRange } from "./lib/utils";
-
-import "dayjs/locale/id";
-
-dayjs.locale("id-ID");
-dayjs.extend(dayjsCustomParseFormat);
-dayjs.extend(dayjsIsToday);
-dayjs.extend(dayjsIsBetween);
+import { DownloadExtension } from "./components/download-extension";
 
 export function App() {
-  const schedulesQuery = useQuery({
-    queryKey: ["schedules"],
-    queryFn: async () => {
-      const response = await apiClient.api.schedules.$get({
-        query: {
-          studyProgram: "Sains Data",
-          classType: "Profesional",
-          ongoingSemester: "II (Genap)",
-          intakeYear: "2025",
-          intakeMonth: "September",
-        },
-      });
-      if (!response.ok)
-        throw new Error("Terjadi kesalahan ketika mengambil jadwal.");
-      return await response.json();
-    },
-  });
-
-  function handleAddToGoogleCalendar(date: string, schedule: ScheduleItem) {
-    const parsedTimeRange = parseTimeRange(schedule.hour);
-    const startDate = new Date(
-      `${date} ${parsedTimeRange?.start?.hour}:${parsedTimeRange?.start?.minute}`,
-    )
-      .toISOString()
-      .replace(/-|:|\.\d+/g, "");
-    const endDate = new Date(
-      `${date} ${parsedTimeRange?.end?.hour}:${parsedTimeRange?.end?.minute}`,
-    )
-      .toISOString()
-      .replace(/-|:|\.\d+/g, "");
-    const googleCalendarURL = new URL(
-      "https://calendar.google.com/calendar/render?action=TEMPLATE",
-    );
-    googleCalendarURL.searchParams.set(
-      "text",
-      `[Kuliah] ${schedule.subject} - ${schedule.room}`,
-    );
-    googleCalendarURL.searchParams.set("dates", `${startDate}/${endDate}`);
-    window.open(googleCalendarURL.toString(), "_blank");
-  }
-
   return (
-    <main className="3xl:max-w-screen-2xl mx-auto max-w-[1400px] p-4 lg:p-8 flex flex-1 scroll-mt-20 flex-col gap-4">
+    <main className="3xl:max-w-screen-2xl mx-auto max-w-[1400px] p-4 lg:p-8 flex flex-1 scroll-mt-20 flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold tracking-tight">
           Cakyu Class Helper
         </h1>
         <p className="text-muted-foreground">
-          A helpful tools for your daily classes chores like filling feedback
-          form :)
+          Prefill form feedback kuliah dari sesi RISE, tanpa mengisi NIM dan
+          kode kelas berulang-ulang.
         </p>
       </div>
 
-      <Alert className="border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-50">
-        <InfoIcon />
-        <AlertTitle>Informasi</AlertTitle>
-        <AlertDescription>Sehubungan dengan adanya pembaruan sistem akademik Cakyu, Cakyu Helper ini untuk sementara waktu tidak bisa digunakan.</AlertDescription>
-      </Alert>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <PuzzleIcon className="text-muted-foreground" />
+            <CardTitle>Pasang ekstensi</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground space-y-2">
+            <DownloadExtension />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <GraduationCapIcon className="text-muted-foreground" />
+            <CardTitle>Isi dari RISE</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground space-y-2">
+            <p>
+              Buka halaman sesi pembelajaran di RISE. Tombol{" "}
+              <strong className="text-foreground">Isi Feedback</strong> muncul
+              di samping Isi Presensi. Data mahasiswa tersimpan di browser.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <MapIcon className="text-muted-foreground" />
+            <CardTitle>Form baru? Map sendiri</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground space-y-2">
+            <p>
+              Tempel URL Google Form di popup ekstensi. Di halaman form, pakai{" "}
+              <strong className="text-foreground">Map form</strong> lalu klik
+              pertanyaan untuk bind ke NIM, mata kuliah, rating, dan seterusnya.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        Default mapping semester ganjil 2026/2027 ada di{" "}
+        <a className="underline" href="/mappings/default.json">
+          /mappings/default.json
+        </a>
+        . Mapping override milikmu tidak pernah dikirim ke server.
+      </p>
     </main>
   );
 }

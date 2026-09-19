@@ -16,6 +16,9 @@ dist-ssr
 !.env.example
 .turbo
 
+# Local HTML / form dumps (may contain student PII)
+/debug/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

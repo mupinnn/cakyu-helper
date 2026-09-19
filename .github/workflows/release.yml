@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver without v prefix, e.g. 1.0.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="${INPUT_VERSION}"
+          else
+            VERSION="${REF_NAME}"
+          fi
+          VERSION="${VERSION#v}"
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+(\.[0-9]+){1,3}$'; then
+            echo "Invalid Chrome extension version: $VERSION"
+            exit 1
+          fi
+          TAG="v${VERSION}"
+          ZIP="cakyu-helper-${TAG}.zip"
+          FOLDER="cakyu-helper-${TAG}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "zip=${ZIP}" >> "$GITHUB_OUTPUT"
+          echo "folder=${FOLDER}" >> "$GITHUB_OUTPUT"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - run: bun install
+
+      - name: Stamp manifest version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          jq --arg v "$VERSION" '.version = $v' apps/extension/manifest.json \
+            > apps/extension/manifest.json.tmp
+          mv apps/extension/manifest.json.tmp apps/extension/manifest.json
+
+      - name: Build extension
+        run: bun run --filter @cakyu-helper/extension build
+
+      - name: Package zip and checksums
+        id: package
+        env:
+          ZIP: ${{ steps.version.outputs.zip }}
+          FOLDER: ${{ steps.version.outputs.folder }}
+        run: |
+          set -euo pipefail
+          mkdir -p "dist-release/${FOLDER}"
+          cp -a apps/extension/dist/. "dist-release/${FOLDER}/"
+          test -f "dist-release/${FOLDER}/manifest.json"
+          python3 - "$ZIP" "$FOLDER" <<'PY'
+          import hashlib, os, shutil, sys
+          zip_name, folder = sys.argv[1], sys.argv[2]
+          shutil.make_archive(
+              os.path.splitext(zip_name)[0],
+              "zip",
+              root_dir="dist-release",
+              base_dir=folder,
+          )
+          sha256 = hashlib.sha256()
+          with open(zip_name, "rb") as fh:
+              for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                  sha256.update(chunk)
+          digest = sha256.hexdigest()
+          with open("SHA256SUMS", "w", encoding="utf-8") as fh:
+              fh.write(f"{digest}  {zip_name}\n")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"sha256={digest}\n")
+          print(f"{digest}  {zip_name}")
+          PY
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          body: |
+            Checksum (SHA-256):
+
+                ${{ steps.package.outputs.sha256 }}  ${{ steps.version.outputs.zip }}
+          files: |
+            ${{ steps.version.outputs.zip }}
+            SHA256SUMS

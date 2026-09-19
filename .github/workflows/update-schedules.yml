@@ -1,8 +1,7 @@
+# Disabled: SIAKAD scraper is frozen; live class data comes from RISE in the extension.
 name: Weekly updates the schedules
 
 on:
-  schedule:
-    - cron: "0 8 * * 0"
   workflow_dispatch:
 
 permissions:
@@ -11,6 +10,7 @@ permissions:
 
 jobs:
   setup-matrix:
+    if: false
     runs-on: ubuntu-latest
 
     outputs:
@@ -23,6 +23,7 @@ jobs:
           echo "matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
   update-schedules:
+    if: false
     needs: setup-matrix
     runs-on: ubuntu-latest
 

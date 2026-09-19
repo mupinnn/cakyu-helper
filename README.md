@@ -6,12 +6,13 @@ A helpful tools for Cakranians daily classes chores like filling feedback form :
 
 This project is built on top of monorepo powered by Turborepo with these packages:
 
-| Package                | Description                                                                                                                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `@cakyu-helper/cli`    | A CLI app to scrape student schedule from SIAKAD (academic information system) by providing their study program, email, and password. The scraped schedules will saved to JSON file. |
-| `@cakyu-helper/shared` | Shared things between packages.                                                                                                                                                      |
-| `@cakyu-helper/api`    | A Hono app that as an API to provide the scraped schedules. It uses Hono RPC, so it's type-safe.                                                                                     |
-| `@cakyu-helper/web`    | A React app that serve the UI and consume `@cakyu-helper/api`. Showing schedules and prefilled link generator for the feedback form.                                                 |
+| Package                    | Description                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@cakyu-helper/cli`        | A CLI app to scrape student schedule from SIAKAD (academic information system) by providing their study program, email, and password. The scraped schedules will saved to JSON file. |
+| `@cakyu-helper/shared`     | Shared things between packages.                                                                                                                                                      |
+| `@cakyu-helper/api`        | A Hono app that as an API to provide the scraped schedules. It uses Hono RPC, so it's type-safe.                                                                                     |
+| `@cakyu-helper/web`        | Landing page, install notes, and hosted default Google Form mapping.                                                                                                                 |
+| `@cakyu-helper/extension`  | Chromium/Brave extension: injects **Isi Feedback** on RISE session cards and prefills the lecture Google Form. Students can remap fields themselves.                                 |
 
 If you're using Nix and `nix-direnv`, just run `direnv allow` and everything will be setup. If not,
 make sure Bun at least v1.3.3 in your system.
@@ -26,7 +27,11 @@ Cakranians would know the value.
 | Command         | Description                                                                |
 | --------------- | -------------------------------------------------------------------------- |
 | `bun run dev`   | Run the development server for `@cakyu-helper/api` and `@cakyu-helper/web` |
-| `bun run build` | Build `@cakyu-helper/api` as compiled binary and `@cakyu-helper/web`       |
+| `bun run build` | Build `@cakyu-helper/api`, `@cakyu-helper/web`, and `@cakyu-helper/extension` |
+
+#### `@cakyu-helper/extension`
+
+See [`apps/extension/README.md`](apps/extension/README.md). Students download a zip from [the landing page](https://cakyu-helper.13121957.xyz) (GitHub Release assets + SHA-256) and load unpacked in Chrome or Brave. Contributors can still clone and build from `apps/extension/dist`. The SIAKAD scraper is frozen; live class data now comes from RISE in the student’s browser.
 
 #### `@cakyu-helper/web` commands
 
@@ -48,9 +53,20 @@ Run these commands inside `apps/web` directory or using Bun workspace filter fea
 
 ## Deployment
 
-Production deploys run through [parachute](https://github.com/mupinnn/parachute). Pushes to `main` (including merged schedule-update PRs) trigger GitHub Actions to build and push images to GHCR, then notify the parachute daemon over Tailscale.
+Production deploys run through [parachute](https://github.com/mupinnn/parachute). Pushes to `main` trigger GitHub Actions to build and push images to GHCR, then notify the parachute daemon over Tailscale. The weekly SIAKAD schedule-update workflow is disabled.
 
 The app is served at `https://cakyu-helper.13121957.xyz`. Only the `web` container is publicly routed; nginx proxies `/api/` to the internal API service.
+
+### Releasing the extension
+
+Extension zips are **not** published on every `main` push. After merging:
+
+```bash
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+Or run **Actions → Release → Run workflow** with `version` (e.g. `1.0.0`) on `main`. The workflow stamps `apps/extension/manifest.json`, zips `dist`, writes `SHA256SUMS`, and creates a GitHub Release. The landing page picks up new releases from the GitHub API (no site redeploy).
 
 ### GitHub secrets
 
