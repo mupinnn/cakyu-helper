@@ -37,7 +37,12 @@ export async function writeStorage(
 
 export async function loadProfile(): Promise<StudentProfile> {
   const stored = await readStorage();
-  return { ...emptyProfile(), ...stored.profile };
+  const base = emptyProfile();
+  return {
+    ...base,
+    ...stored.profile,
+    extras: { ...base.extras, ...stored.profile?.extras },
+  };
 }
 
 export async function saveProfile(profile: StudentProfile): Promise<void> {

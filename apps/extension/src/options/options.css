@@ -53,6 +53,14 @@ button.ghost {
   border: 1px solid #cbd5e0;
 }
 .status { font-size: 13px; color: #0f766e; min-height: 18px; }
+.mapping-list {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 13px;
+  line-height: 1.5;
+  max-height: 320px;
+  overflow: auto;
+}
 pre {
   background: #0f172a;
   color: #e2e8f0;

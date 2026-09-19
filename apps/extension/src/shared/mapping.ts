@@ -43,14 +43,31 @@ export function choicesFor(
   return hit?.choices ?? [];
 }
 
+export function customKeyOf(mapping: FieldMapping): string {
+  return mapping.customKey ?? mapping.entryId;
+}
+
+export function customMappings(
+  mappings: FieldMapping[],
+  school: string,
+): FieldMapping[] {
+  return activeMappings(mappings, school).filter(
+    (mapping) => mapping.source === "custom",
+  );
+}
+
 export function sourceValue(
-  source: DataSource,
+  mapping: FieldMapping,
   profile: StudentProfile,
   session: SessionContext,
   ratings: RatingPayload,
   mappings: FieldMapping[],
 ): string {
-  switch (source) {
+  if (mapping.source === "custom") {
+    return profile.extras[customKeyOf(mapping)] ?? "";
+  }
+
+  switch (mapping.source) {
     case "student.nim":
       return profile.nim;
     case "student.enrollmentYear":
@@ -120,7 +137,7 @@ export function resolveMappings(
 ): ResolvedField[] {
   return activeMappings(config.mappings, profile.school).map((mapping) => {
     const raw = sourceValue(
-      mapping.source,
+      mapping,
       profile,
       session,
       ratings,
@@ -155,6 +172,7 @@ export function emptyProfile(): StudentProfile {
     semester: "",
     school: "",
     major: "",
+    extras: {},
   };
 }
 

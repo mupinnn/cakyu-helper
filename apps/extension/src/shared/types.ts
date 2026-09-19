@@ -13,7 +13,8 @@ export type DataSource =
   | "rating.interactivity"
   | "rating.lecturerPerformance"
   | "feedback.understanding"
-  | "feedback.lecturer";
+  | "feedback.lecturer"
+  | "custom";
 
 export type FieldType = "text" | "paragraph" | "radio" | "dropdown";
 
@@ -22,6 +23,7 @@ export type FieldMapping = {
   title: string;
   type: FieldType;
   source: DataSource;
+  customKey?: string;
   when?: { school: string };
   choices?: string[];
 };
@@ -39,6 +41,7 @@ export type StudentProfile = {
   semester: string;
   school: string;
   major: string;
+  extras: Record<string, string>;
 };
 
 export type SessionContext = {

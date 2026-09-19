@@ -79,8 +79,17 @@ const SCHOOL_BY_MAJOR: Record<string, string> = {
   "Business Law": "School of Law",
 };
 
+export const CUSTOM_SOURCE = "custom" as const;
+export const CUSTOM_LABEL = "Simpan jawaban saya";
+export const UNBOUND_LABEL = "Isi di Google Form";
+
 export function sourceLabel(id: DataSource): string {
+  if (id === CUSTOM_SOURCE) return CUSTOM_LABEL;
   return DATA_SOURCES.find((item) => item.id === id)?.label ?? id;
+}
+
+export function mappingSourceLabel(source: DataSource): string {
+  return sourceLabel(source);
 }
 
 export function inferSourceFromTitle(title: string): DataSource | null {
@@ -154,6 +163,10 @@ export function inferSemester(
   return labels[number] ?? "";
 }
 
-export function isDataSource(value: string): value is DataSource {
+export function isBuiltinSource(value: string): value is Exclude<DataSource, "custom"> {
   return DATA_SOURCES.some((item) => item.id === value);
+}
+
+export function isMappingSource(value: string): value is DataSource {
+  return value === CUSTOM_SOURCE || isBuiltinSource(value);
 }

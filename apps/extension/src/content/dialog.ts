@@ -2,6 +2,8 @@ import { dialogStyles } from "./dialog-styles";
 import {
   buildPrefillUrl,
   choicesFor,
+  customKeyOf,
+  customMappings,
   emptyRatings,
   resolveMappings,
 } from "../shared/mapping";
@@ -111,7 +113,7 @@ function seedProfile(
     stored.enrollmentYear || enrollmentYearFromNim(nim);
   const semester =
     stored.semester || inferSemester(enrollmentYear, session.period);
-  return { nim, major, school, enrollmentYear, semester };
+  return { nim, major, school, enrollmentYear, semester, extras: stored.extras ?? {} };
 }
 
 function readForm(root: ShadowRoot): {
@@ -137,6 +139,14 @@ function readForm(root: ShadowRoot): {
       ?.checked,
   );
 
+  const extras: Record<string, string> = {};
+  for (const node of root.querySelectorAll("[data-extra-key]")) {
+    const key = node.getAttribute("data-extra-key");
+    if (!key) continue;
+    extras[key] =
+      (node as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+  }
+
   return {
     profile: {
       nim: value("nim"),
@@ -144,6 +154,7 @@ function readForm(root: ShadowRoot): {
       semester: value("semester"),
       school: value("school"),
       major: value("major"),
+      extras,
     },
     sessionPatch: {
       subject: value("subject"),
@@ -301,6 +312,28 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
     field("Feedback dosen", lecturerFeedback),
   ]);
 
+  const extras = customMappings(config.mappings, profile.school);
+  const extraSet = el("fieldset", {}, [
+    el("legend", {}, ["Jawaban tersimpan"]),
+  ]);
+  for (const mapping of extras) {
+    const key = customKeyOf(mapping);
+    const current = profile.extras[key] ?? "";
+    const name = `extra:${key}`;
+    let control: HTMLElement;
+    if (mapping.choices?.length) {
+      control = select(name, current, mapping.choices);
+    } else if (mapping.type === "paragraph") {
+      control = el("textarea", { name }, [current]);
+    } else {
+      control = input(name, current);
+    }
+    control.setAttribute("data-extra-key", key);
+    extraSet.append(
+      field(mapping.title, control, unmatchedHint(current, mapping.choices ?? [])),
+    );
+  }
+
   const warning = el("div", { class: "warn", hidden: "" });
 
   const actions = el("div", { class: "actions" }, [
@@ -309,7 +342,9 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
   ]);
   actions.firstElementChild?.addEventListener("click", () => closeDialog());
 
-  form.append(studentSet, sessionSet, ratingSet, warning, actions);
+  form.append(studentSet, sessionSet, ratingSet);
+  if (extras.length) form.append(extraSet);
+  form.append(warning, actions);
   panel.append(form);
   overlay.append(panel);
   shadow.append(overlay);
@@ -362,7 +397,10 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
       return;
     }
 
-    await saveProfile(parsed.profile);
+    await saveProfile({
+      ...parsed.profile,
+      extras: { ...profile.extras, ...parsed.profile.extras },
+    });
 
     const patchedSession: SessionContext = {
       ...session,
