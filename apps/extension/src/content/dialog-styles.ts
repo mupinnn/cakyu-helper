@@ -11,6 +11,7 @@ export const dialogStyles = `
   width: min(640px, 100%);
   max-height: min(90vh, 860px);
   overflow: auto;
+  overflow-x: hidden;
   background: #fff;
   color: #1a202c;
   border-radius: 16px;
@@ -33,21 +34,33 @@ fieldset.priority {
   background: #f0fbfd;
 }
 fieldset.priority legend { color: #0e7490; }
+fieldset.changed {
+  border-color: #d97706;
+  background: #fffbeb;
+}
 .priority-hint {
   font-size: 12px;
   color: #0e7490;
   margin: 0 0 10px;
 }
+.url-hint {
+  font-size: 12px;
+  color: #9a3412;
+  margin: 0 0 10px;
+}
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 legend { font-weight: 650; padding: 0 6px; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4a5568; margin-bottom: 10px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4a5568; margin-bottom: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4a5568; margin-bottom: 10px; min-width: 0; }
 .field > span:first-child { font-size: 12px; color: #4a5568; }
 input, select, textarea {
   border: 1px solid #cbd5e0; border-radius: 8px; padding: 8px 10px;
   font-size: 14px; color: #1a202c; background: #fff;
+  min-width: 0; max-width: 100%;
 }
+select, input { width: 100%; }
 textarea { min-height: 72px; resize: vertical; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 12px; }
 .ratings { display: flex; gap: 6px; }
 .ratings label { flex: 1; margin: 0; flex-direction: row; align-items: center; justify-content: center; gap: 6px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; font-size: 14px; color: #1a202c; }
 .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
@@ -56,5 +69,5 @@ button { cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 14px;
 .ghost { background: #fff; border-color: #cbd5e0; color: #2d3748; }
 .miss { color: #c2410c; font-size: 11px; }
 .check { flex-direction: row; align-items: center; gap: 8px; color: #1a202c; font-size: 13px; }
-@media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 `;

@@ -50,7 +50,7 @@ function css(): string {
   .primary { background: #149FC4; color: #fff; border-color: #149FC4; }
   .item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-bottom: 6px; font-size: 12px; }
   .item.unmapped { border-style: dashed; }
-  .item strong { display: block; margin-bottom: 4px; }
+  .item strong { display: block; margin-bottom: 4px; overflow-wrap: anywhere; }
   .item select { width: 100%; margin-top: 4px; }
   .status { font-size: 12px; color: #0f766e; min-height: 16px; }
   .pop {
@@ -143,7 +143,10 @@ function toMapping(
     source,
     customKey: source === CUSTOM_SOURCE ? question.entryId : undefined,
     choices: question.choices ?? previous?.choices,
-    when: previous?.when,
+    when:
+      source === "student.school"
+        ? undefined
+        : (previous?.when ?? question.when),
   };
 }
 
@@ -222,7 +225,10 @@ async function boot(): Promise<void> {
     const item = document.createElement("div");
     item.className = mapped ? "item" : "item unmapped";
     const title = document.createElement("strong");
-    title.textContent = question.title;
+    const section = question.when?.school ?? question.section;
+    title.textContent = section
+      ? `${question.title} · ${section}`
+      : question.title;
     const select = sourceSelect(selectedSourceValue(mapped));
     select.addEventListener("change", () => {
       applySource(question, select.value);
@@ -320,6 +326,7 @@ async function boot(): Promise<void> {
             title: question.title,
             type: question.type,
             choices: question.choices ?? previous.choices,
+            when: previous.when ?? question.when,
           },
           false,
         );

@@ -5,6 +5,7 @@ import {
   customKeyOf,
   customMappings,
   emptyRatings,
+  extractFormId,
   resolveMappings,
 } from "../shared/mapping";
 import {
@@ -14,9 +15,11 @@ import {
   inferSemester,
 } from "../shared/sources";
 import {
+  bundledDefault,
   loadDialogDefaults,
   loadFormConfig,
   loadProfile,
+  resetMappingOverride,
   saveDialogDefaults,
   saveFormUrl,
   saveProfile,
@@ -149,6 +152,16 @@ function deliveryValue(
   return sessionDelivery;
 }
 
+function canonicalFormKey(url: string): string {
+  return extractFormId(url) ?? url.trim().replace(/\/$/, "").split("?")[0] ?? "";
+}
+
+function sameFormUrl(a: string, b: string): boolean {
+  const left = canonicalFormKey(a);
+  const right = canonicalFormKey(b);
+  return Boolean(left) && left === right;
+}
+
 function readForm(root: ShadowRoot): {
   formUrl: string;
   profile: StudentProfile;
@@ -258,10 +271,44 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
     "placeholder",
     "https://docs.google.com/forms/d/e/...",
   );
+  const urlHint = el("p", { class: "url-hint" });
+  const resetBtn = el("button", { type: "button", class: "ghost" }, [
+    "Reset ke default",
+  ]);
   const urlSet = el("fieldset", {}, [
     el("legend", {}, ["Google Form"]),
     field("URL form", formUrlInput),
+    urlHint,
+    el("div", { class: "row" }, [resetBtn]),
   ]);
+
+  const syncUrlIndicator = () => {
+    const current = formUrlInput.value.trim();
+    const dirty = current.length > 0 && !sameFormUrl(current, config.formUrl);
+    const notDefault = !sameFormUrl(current || config.formUrl, bundledDefault.formUrl);
+    urlSet.classList.toggle("changed", dirty);
+    const parts: string[] = [];
+    if (dirty) {
+      parts.push("URL diubah. Mapping form ini dipakai saat Buka Google Form.");
+    }
+    if (notDefault) parts.push("Bukan form default.");
+    urlHint.textContent = parts.join(" ");
+    urlHint.hidden = parts.length === 0;
+  };
+  formUrlInput.addEventListener("input", syncUrlIndicator);
+  formUrlInput.addEventListener("change", syncUrlIndicator);
+  syncUrlIndicator();
+
+  resetBtn.addEventListener("click", () => {
+    void (async () => {
+      await saveFormUrl(bundledDefault.formUrl);
+      await resetMappingOverride(config.formId);
+      if (config.formId !== bundledDefault.formId) {
+        await resetMappingOverride(bundledDefault.formId);
+      }
+      await openFeedbackDialog(session);
+    })();
+  });
 
   const studentSet = el("fieldset", {}, [
     el("legend", {}, ["Data mahasiswa"]),

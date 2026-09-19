@@ -10,7 +10,26 @@ export type ParsedFormQuestion = {
   title: string;
   type: "text" | "paragraph" | "radio" | "dropdown";
   choices?: string[];
+  section?: string;
+  when?: { school: string };
 };
+
+function inferSchoolFromSection(title: string): string | null {
+  if (/Class Feedback/i.test(title)) return null;
+  if (/Business Economics/i.test(title)) {
+    return "School of Business Economics";
+  }
+  if (/AI|Computer Science/i.test(title)) {
+    return "School of AI & Computer Science";
+  }
+  if (/Psychology/i.test(title)) return "School of Psychology & Education";
+  if (/Communication/i.test(title)) {
+    return "School of Communication & Design";
+  }
+  if (/Engineering/i.test(title)) return "School of Engineering";
+  if (/Law/i.test(title)) return "School of Law";
+  return null;
+}
 
 export function extractJsonArray(source: string, marker: string): unknown | null {
   const index = source.indexOf(marker);
@@ -71,11 +90,19 @@ export function questionsFromLoadData(data: unknown): ParsedFormQuestion[] {
   if (!Array.isArray(questions)) return [];
 
   const result: ParsedFormQuestion[] = [];
+  let currentSection: string | undefined;
+  let currentSchool: string | null = null;
   for (const question of questions) {
     if (!Array.isArray(question)) continue;
     const type = Number(question[3]);
-    if (type === 8) continue;
     const title = String(question[1] ?? "").replace(/<[^>]+>/g, "").trim();
+    if (type === 8) {
+      currentSchool = inferSchoolFromSection(title);
+      currentSection =
+        currentSchool ??
+        (/Class Feedback/i.test(title) ? undefined : title || undefined);
+      continue;
+    }
     const entryBlock = question[4];
     if (!Array.isArray(entryBlock) || !Array.isArray(entryBlock[0])) continue;
     const entryId = entryBlock[0][0];
@@ -91,6 +118,8 @@ export function questionsFromLoadData(data: unknown): ParsedFormQuestion[] {
       title,
       type: TYPE_MAP[type] ?? "text",
       choices,
+      section: currentSchool ?? currentSection,
+      when: currentSchool ? { school: currentSchool } : undefined,
     });
   }
   return result;
