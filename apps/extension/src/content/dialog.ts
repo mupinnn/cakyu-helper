@@ -9,6 +9,12 @@ import {
   resolveMappings,
 } from "../shared/mapping";
 import {
+  matchChoice,
+  rememberOverride,
+  resolveChoice,
+  sessionOption,
+} from "../shared/match";
+import {
   canonicalizeMajor,
   enrollmentYearFromNim,
   inferSchoolFromMajor,
@@ -25,6 +31,7 @@ import {
   saveProfile,
 } from "../shared/storage";
 import type {
+  ChoiceOverrides,
   DialogDefaults,
   FormConfig,
   RatingPayload,
@@ -52,9 +59,7 @@ function el<K extends keyof HTMLElementTagNameMap>(
 
 function unmatchedHint(value: string, options: string[]): string | undefined {
   if (!value || !options.length) return undefined;
-  if (options.some((option) => option.toLowerCase() === value.toLowerCase())) {
-    return undefined;
-  }
+  if (matchChoice(value, options).match) return undefined;
   return `Tidak ada opsi persis "${value}". Pilih yang paling dekat.`;
 }
 
@@ -78,13 +83,21 @@ function input(
 
 function select(name: string, value: string, options: string[]): HTMLSelectElement {
   const node = el("select", { name });
-  const values = options.includes(value) || !value ? options : [value, ...options];
-  if (!value) {
+  const matched = options.length ? matchChoice(value, options).match : "";
+  const selected = matched || value;
+  const known = options.some(
+    (option) =>
+      option === selected || option.toLowerCase() === selected.toLowerCase(),
+  );
+  const values = known || !value ? options : [value, ...options];
+  if (!selected) {
     node.append(el("option", { value: "" }, ["— pilih —"]));
   }
   for (const option of values) {
     const item = el("option", { value: option }, [option]);
-    if (option === value) item.selected = true;
+    if (option === selected || option.toLowerCase() === selected.toLowerCase()) {
+      item.selected = true;
+    }
     node.append(item);
   }
   return node;
@@ -127,29 +140,16 @@ function seedProfile(
   return { nim, major, school, enrollmentYear, semester, extras: stored.extras ?? {} };
 }
 
-function sessionChoiceValue(
+function sessionRaw(
+  session: SessionContext,
   sessionChoices: string[],
-  sessionNo: number,
-  last?: string,
 ): string {
-  if (last && (!sessionChoices.length || sessionChoices.includes(last))) {
-    return last;
-  }
-  return (
-    sessionChoices.find((choice) => choice.startsWith(String(sessionNo))) ??
-    String(sessionNo)
+  return sessionOption(
+    session.sessionNo,
+    session.isUts,
+    session.isUas,
+    sessionChoices,
   );
-}
-
-function deliveryValue(
-  sessionDelivery: SessionContext["delivery"],
-  deliveryChoices: string[],
-  last?: SessionContext["delivery"],
-): string {
-  if (last && (!deliveryChoices.length || deliveryChoices.includes(last))) {
-    return last;
-  }
-  return sessionDelivery;
 }
 
 function canonicalFormKey(url: string): string {
@@ -337,15 +337,31 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
   const classChoices = choicesFor(config.mappings, "schedule.classCode", profile.school);
   const lecturerChoices = choicesFor(config.mappings, "schedule.lecturer", profile.school);
 
-  const chosenSession = sessionChoiceValue(
+  const sessionDefault = sessionRaw(session, sessionChoices);
+  const chosenSession = resolveChoice(
+    sessionDefault,
     sessionChoices,
-    session.sessionNo,
-    defaults.sessionChoice,
+    defaults.choiceOverrides?.session,
   );
-  const chosenDelivery = deliveryValue(
+  const chosenDelivery = resolveChoice(
     session.delivery,
-    deliveryChoices,
-    defaults.delivery,
+    deliveryChoices.length ? deliveryChoices : [session.delivery],
+    defaults.choiceOverrides?.delivery,
+  );
+  const chosenSubject = resolveChoice(
+    session.subject,
+    subjectChoices,
+    defaults.choiceOverrides?.subject,
+  );
+  const chosenClassCode = resolveChoice(
+    session.classCode,
+    classChoices,
+    defaults.choiceOverrides?.classCode,
+  );
+  const chosenLecturer = resolveChoice(
+    session.lecturer,
+    lecturerChoices,
+    defaults.choiceOverrides?.lecturer,
   );
 
   const sessionSet = el("fieldset", {}, [
@@ -353,18 +369,18 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
     el("div", { class: "grid" }, [
       field(
         "Mata kuliah",
-        select("subject", session.subject, subjectChoices),
-        unmatchedHint(session.subject, subjectChoices),
+        select("subject", chosenSubject, subjectChoices),
+        unmatchedHint(chosenSubject, subjectChoices),
       ),
       field(
         "Kode kelas",
-        select("classCode", session.classCode, classChoices),
-        unmatchedHint(session.classCode, classChoices),
+        select("classCode", chosenClassCode, classChoices),
+        unmatchedHint(chosenClassCode, classChoices),
       ),
       field(
         "Dosen",
-        select("lecturer", session.lecturer, lecturerChoices),
-        unmatchedHint(session.lecturer, lecturerChoices),
+        select("lecturer", chosenLecturer, lecturerChoices),
+        unmatchedHint(chosenLecturer, lecturerChoices),
       ),
       field(
         "Pertemuan",
@@ -467,7 +483,8 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
     for (const option of nextMajors) {
       majorSelect.append(el("option", { value: option }, [option]));
     }
-    if (nextMajors.includes(current)) majorSelect.value = current;
+    const matchedMajor = matchChoice(current, nextMajors).match;
+    if (matchedMajor) majorSelect.value = matchedMajor;
   });
 
   const syncRatings = (value: number) => {
@@ -506,11 +523,43 @@ export async function openFeedbackDialog(session: SessionContext): Promise<void>
 
     if (parsed.formUrl) await saveFormUrl(parsed.formUrl);
 
+    const choiceOverrides: ChoiceOverrides = {
+      subject: rememberOverride(
+        session.subject,
+        parsed.sessionPatch.subject,
+        subjectChoices,
+        defaults.choiceOverrides?.subject,
+      ),
+      classCode: rememberOverride(
+        session.classCode,
+        parsed.sessionPatch.classCode,
+        classChoices,
+        defaults.choiceOverrides?.classCode,
+      ),
+      lecturer: rememberOverride(
+        session.lecturer,
+        parsed.sessionPatch.lecturer,
+        lecturerChoices,
+        defaults.choiceOverrides?.lecturer,
+      ),
+      session: rememberOverride(
+        sessionDefault,
+        parsed.sessionPatch.sessionChoice,
+        sessionChoices,
+        defaults.choiceOverrides?.session,
+      ),
+      delivery: rememberOverride(
+        session.delivery,
+        parsed.sessionPatch.delivery,
+        deliveryChoices,
+        defaults.choiceOverrides?.delivery,
+      ),
+    };
+
     const nextDefaults: DialogDefaults = {
-      sessionChoice: parsed.sessionPatch.sessionChoice,
-      delivery: parsed.sessionPatch.delivery,
       ratings: parsed.ratings,
       customizeLecturer: parsed.customizeLecturer,
+      choiceOverrides,
     };
     await saveDialogDefaults(nextDefaults);
 

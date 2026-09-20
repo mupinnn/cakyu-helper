@@ -82,11 +82,18 @@ export type ResolvedField = {
   confidence: MatchConfidence;
 };
 
+export type ChoiceOverrides = {
+  subject?: Record<string, string>;
+  classCode?: Record<string, string>;
+  lecturer?: Record<string, string>;
+  session?: Record<string, string>;
+  delivery?: Record<string, string>;
+};
+
 export type DialogDefaults = {
-  sessionChoice?: string;
-  delivery?: SessionContext["delivery"];
   ratings?: RatingPayload;
   customizeLecturer?: boolean;
+  choiceOverrides?: ChoiceOverrides;
 };
 
 export type ExtensionStorage = {
