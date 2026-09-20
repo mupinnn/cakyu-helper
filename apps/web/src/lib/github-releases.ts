@@ -1,6 +1,9 @@
-export const GITHUB_REPO = "mupinnn/cakyu-helper";
+export const GITHUB_USER = "mupinnn";
+export const GITHUB_REPO = `${GITHUB_USER}/cakyu-helper`;
+export const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`;
+export const GITHUB_USER_URL = `https://github.com/${GITHUB_USER}`;
 export const GITHUB_RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
-export const GITHUB_RELEASES_PAGE = `https://github.com/${GITHUB_REPO}/releases`;
+export const GITHUB_RELEASES_PAGE = `${GITHUB_REPO_URL}/releases`;
 
 export const RELEASES_CACHE_KEY = "cakyu-helper:github-releases";
 export const RELEASES_STALE_TIME_MS = 24 * 60 * 60 * 1000;
