@@ -82,10 +82,12 @@ export function HowToUse() {
         <ol className="space-y-8">
           <Step n={1} title="Pasang ekstensi">
             <p>
-              Unduh zip di atas, unzip, lalu load unpacked di{" "}
+              Chrome/Brave: unduh zip di atas, unzip, lalu load unpacked di{" "}
               <code className="text-foreground">chrome://extensions</code> atau{" "}
               <code className="text-foreground">brave://extensions</code>{" "}
-              (Developer mode).
+              (Developer mode). Firefox 140+: unduh .xpi, buka{" "}
+              <code className="text-foreground">about:addons</code>, gear →{" "}
+              <strong className="text-foreground">Install Add-on From File…</strong>
             </p>
           </Step>
 

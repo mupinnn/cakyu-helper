@@ -1,5 +1,8 @@
 import bundledDefault from "./default-mapping.json";
-import { DEFAULT_MAPPING_URL } from "./sources";
+import {
+  DEFAULT_MAPPING_HOST_PERMISSION,
+  DEFAULT_MAPPING_URL,
+} from "./sources";
 import { emptyProfile, extractFormId } from "./mapping";
 import type {
   DialogDefaults,
@@ -85,8 +88,27 @@ export async function loadFormConfig(): Promise<FormConfig> {
   return { formId, formUrl: url, mappings: [] };
 }
 
+async function ensureMappingHostPermission(): Promise<boolean> {
+  const origins = [DEFAULT_MAPPING_HOST_PERMISSION];
+  try {
+    if (chrome.permissions?.contains) {
+      const granted = await chrome.permissions.contains({ origins });
+      if (granted) return true;
+    }
+    if (chrome.permissions?.request) {
+      return await chrome.permissions.request({ origins });
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function refreshPublishedDefault(): Promise<FormConfig | null> {
   try {
+    const allowed = await ensureMappingHostPermission();
+    if (!allowed) return null;
+
     const response = await chrome.runtime.sendMessage({
       type: "fetchDefaultMapping",
     });

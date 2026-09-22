@@ -40,15 +40,21 @@ jobs:
           fi
           TAG="v${VERSION}"
           ZIP="cakyu-helper-${TAG}.zip"
+          XPI="cakyu-helper-${TAG}.xpi"
           FOLDER="cakyu-helper-${TAG}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "zip=${ZIP}" >> "$GITHUB_OUTPUT"
+          echo "xpi=${XPI}" >> "$GITHUB_OUTPUT"
           echo "folder=${FOLDER}" >> "$GITHUB_OUTPUT"
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - run: bun install
 
@@ -63,8 +69,7 @@ jobs:
       - name: Build extension
         run: bun run --filter @cakyu-helper/extension build
 
-      - name: Package zip and checksums
-        id: package
+      - name: Package Chromium zip
         env:
           ZIP: ${{ steps.version.outputs.zip }}
           FOLDER: ${{ steps.version.outputs.folder }}
@@ -74,7 +79,7 @@ jobs:
           cp -a apps/extension/dist/. "dist-release/${FOLDER}/"
           test -f "dist-release/${FOLDER}/manifest.json"
           python3 - "$ZIP" "$FOLDER" <<'PY'
-          import hashlib, os, shutil, sys
+          import os, shutil, sys
           zip_name, folder = sys.argv[1], sys.argv[2]
           shutil.make_archive(
               os.path.splitext(zip_name)[0],
@@ -82,16 +87,135 @@ jobs:
               root_dir="dist-release",
               base_dir=folder,
           )
-          sha256 = hashlib.sha256()
-          with open(zip_name, "rb") as fh:
-              for chunk in iter(lambda: fh.read(1024 * 1024), b""):
-                  sha256.update(chunk)
-          digest = sha256.hexdigest()
-          with open("SHA256SUMS", "w", encoding="utf-8") as fh:
-              fh.write(f"{digest}  {zip_name}\n")
+          PY
+
+      - name: Package AMO source zip
+        run: |
+          set -euo pipefail
+          mkdir -p dist-firefox
+          python3 <<'PY'
+          from pathlib import Path
+          import textwrap
+          import zipfile
+
+          out = Path("dist-firefox/cakyu-helper-source.zip")
+          skip = {"dist", "node_modules", "web-ext-artifacts"}
+          build_txt = textwrap.dedent("""\
+          Cakyu Helper — source for AMO reviewers
+
+          The GitHub Release .xpi is a minified Bun bundle of apps/extension.
+
+          Rebuild:
+
+          1. Install Bun 1.3.3 or newer (https://bun.sh)
+          2. bun install
+          3. bun run --filter @cakyu-helper/extension build
+          4. Compare apps/extension/dist with the uploaded minified files
+          """)
+
+          with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
+              zf.writestr("BUILD.txt", build_txt)
+              for name in ("package.json", "bun.lock", "turbo.json"):
+                  zf.write(name, name)
+              for path in Path("apps/extension").rglob("*"):
+                  if any(part in skip for part in path.parts):
+                      continue
+                  if path.is_file():
+                      zf.write(path, path.as_posix())
+          print(f"wrote {out}")
+          PY
+
+      - name: Sign Firefox XPI
+        env:
+          AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+          AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+          XPI: ${{ steps.version.outputs.xpi }}
+        run: |
+          set -euo pipefail
+          if [ -z "$AMO_API_KEY" ] || [ -z "$AMO_API_SECRET" ]; then
+            echo "AMO_API_KEY and AMO_API_SECRET are required to sign the Firefox XPI"
+            exit 1
+          fi
+          ./apps/extension/node_modules/.bin/web-ext sign \
+            --source-dir apps/extension/dist \
+            --channel unlisted \
+            --api-key "$AMO_API_KEY" \
+            --api-secret "$AMO_API_SECRET" \
+            --artifacts-dir dist-firefox \
+            --upload-source-code dist-firefox/cakyu-helper-source.zip \
+            --timeout 300000 \
+            --approval-timeout 900000
+          SIGNED="$(find dist-firefox -maxdepth 1 -name '*.xpi' | head -n 1)"
+          test -n "$SIGNED"
+          mv "$SIGNED" "$XPI"
+
+      - name: Checksums and Firefox update manifest
+        id: package
+        env:
+          ZIP: ${{ steps.version.outputs.zip }}
+          XPI: ${{ steps.version.outputs.xpi }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import hashlib, json, os, pathlib
+
+          zip_name = os.environ["ZIP"]
+          xpi_name = os.environ["XPI"]
+          version = os.environ["VERSION"]
+          tag = os.environ["TAG"]
+          repository = os.environ["REPOSITORY"]
+          gecko_id = json.loads(
+              pathlib.Path("apps/extension/manifest.json").read_text(encoding="utf-8")
+          )["browser_specific_settings"]["gecko"]["id"]
+
+          def sha256_file(path: str) -> str:
+              digest = hashlib.sha256()
+              with open(path, "rb") as fh:
+                  for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+          zip_sha = sha256_file(zip_name)
+          xpi_sha = sha256_file(xpi_name)
+          xpi_url = (
+              f"https://github.com/{repository}/releases/download/{tag}/{xpi_name}"
+          )
+          updates = {
+              "addons": {
+                  gecko_id: {
+                      "updates": [
+                          {
+                              "version": version,
+                              "update_link": xpi_url,
+                              "update_hash": f"sha256:{xpi_sha}",
+                          }
+                      ]
+                  }
+              }
+          }
+          updates_name = "firefox-updates.json"
+          pathlib.Path(updates_name).write_text(
+              json.dumps(updates, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          updates_sha = sha256_file(updates_name)
+
+          lines = [
+              f"{zip_sha}  {zip_name}",
+              f"{xpi_sha}  {xpi_name}",
+              f"{updates_sha}  {updates_name}",
+          ]
+          pathlib.Path("SHA256SUMS").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"sha256={digest}\n")
-          print(f"{digest}  {zip_name}")
+              fh.write(f"sha256={zip_sha}\n")
+              fh.write(f"xpi_sha256={xpi_sha}\n")
+              fh.write(f"updates_sha256={updates_sha}\n")
+
+          print("\n".join(lines))
           PY
 
       - name: Create GitHub Release
@@ -106,6 +230,10 @@ jobs:
             Checksum (SHA-256):
 
                 ${{ steps.package.outputs.sha256 }}  ${{ steps.version.outputs.zip }}
+                ${{ steps.package.outputs.xpi_sha256 }}  ${{ steps.version.outputs.xpi }}
+                ${{ steps.package.outputs.updates_sha256 }}  firefox-updates.json
           files: |
             ${{ steps.version.outputs.zip }}
+            ${{ steps.version.outputs.xpi }}
+            firefox-updates.json
             SHA256SUMS

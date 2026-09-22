@@ -3,6 +3,8 @@ import type { DataSource } from "./types";
 export const DEFAULT_MAPPING_URL =
   "https://cakyu-helper.13121957.xyz/mappings/default.json";
 
+export const DEFAULT_MAPPING_HOST_PERMISSION = `${new URL(DEFAULT_MAPPING_URL).origin}/*`;
+
 export const DATA_SOURCES: {
   id: DataSource;
   label: string;

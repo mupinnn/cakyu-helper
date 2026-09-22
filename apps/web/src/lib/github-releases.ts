@@ -5,7 +5,7 @@ export const GITHUB_USER_URL = `https://github.com/${GITHUB_USER}`;
 export const GITHUB_RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
 export const GITHUB_RELEASES_PAGE = `${GITHUB_REPO_URL}/releases`;
 
-export const RELEASES_CACHE_KEY = "cakyu-helper:github-releases";
+export const RELEASES_CACHE_KEY = "cakyu-helper:github-releases:v2";
 export const RELEASES_STALE_TIME_MS = 24 * 60 * 60 * 1000;
 
 export type GithubReleaseAsset = {
@@ -34,6 +34,9 @@ export type ExtensionRelease = {
   zipName: string;
   sha256sumsUrl: string | null;
   sha256: string | null;
+  xpiUrl: string | null;
+  xpiName: string | null;
+  xpiSha256: string | null;
 };
 
 type CachedReleases = {
@@ -78,9 +81,9 @@ function sha256FromDigest(digest: string | null | undefined): string | null {
   return match ? match[1].toLowerCase() : null;
 }
 
-function sha256FromBody(body: string | null, zipName: string): string | null {
+function sha256FromBody(body: string | null, fileName: string): string | null {
   if (!body) return null;
-  const escaped = zipName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escaped = fileName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = new RegExp(`\\b([a-fA-F0-9]{64})\\s+${escaped}\\b`).exec(body);
   return match ? match[1].toLowerCase() : null;
 }
@@ -93,6 +96,11 @@ export function parseExtensionRelease(
       asset.name.startsWith("cakyu-helper-") && asset.name.endsWith(".zip"),
   );
   if (!zip) return null;
+
+  const xpi = release.assets.find(
+    (asset) =>
+      asset.name.startsWith("cakyu-helper-") && asset.name.endsWith(".xpi"),
+  );
 
   const sha256sums = release.assets.find(
     (asset) => asset.name === "SHA256SUMS" || asset.name.endsWith(".sha256"),
@@ -108,6 +116,11 @@ export function parseExtensionRelease(
     sha256sumsUrl: sha256sums?.browser_download_url ?? null,
     sha256:
       sha256FromDigest(zip.digest) ?? sha256FromBody(release.body, zip.name),
+    xpiUrl: xpi?.browser_download_url ?? null,
+    xpiName: xpi?.name ?? null,
+    xpiSha256: xpi
+      ? (sha256FromDigest(xpi.digest) ?? sha256FromBody(release.body, xpi.name))
+      : null,
   };
 }
 

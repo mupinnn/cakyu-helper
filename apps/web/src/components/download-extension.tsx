@@ -9,6 +9,7 @@ import {
   isCacheFresh,
   readCachedReleases,
   writeCachedReleases,
+  type ExtensionRelease,
 } from "@/lib/github-releases";
 
 const cache = typeof window === "undefined" ? undefined : readCachedReleases();
@@ -24,19 +25,26 @@ function CloneBuildFallback({ asAlternative }: { asAlternative?: boolean }) {
           <code className="text-foreground">apps/extension</code>
         </li>
         <li>
-          Buka <code className="text-foreground">chrome://extensions</code> atau{" "}
-          <code className="text-foreground">brave://extensions</code>
+          Chrome/Brave:{" "}
+          <code className="text-foreground">chrome://extensions</code> atau{" "}
+          <code className="text-foreground">brave://extensions</code>, Load
+          unpacked folder{" "}
+          <code className="text-foreground">apps/extension/dist</code>
         </li>
         <li>
-          Load unpacked folder{" "}
-          <code className="text-foreground">apps/extension/dist</code>
+          Firefox (sementara):{" "}
+          <code className="text-foreground">
+            about:debugging#/runtime/this-firefox
+          </code>
+          , Load Temporary Add-on, pilih{" "}
+          <code className="text-foreground">apps/extension/dist/manifest.json</code>
         </li>
       </ol>
     </div>
   );
 }
 
-function InstallSteps() {
+function ChromiumInstallSteps() {
   return (
     <ol className="list-decimal space-y-1 pl-4">
       <li>Unzip file yang diunduh</li>
@@ -47,6 +55,95 @@ function InstallSteps() {
       <li>Aktifkan Developer mode</li>
       <li>Load unpacked, pilih folder hasil unzip</li>
     </ol>
+  );
+}
+
+function FirefoxInstallSteps() {
+  return (
+    <ol className="list-decimal space-y-1 pl-4">
+      <li>Unduh file .xpi</li>
+      <li>
+        Buka <code className="text-foreground">about:addons</code>
+      </li>
+      <li>
+        Klik ikon gear, lalu <strong className="text-foreground">Install Add-on From File…</strong>
+      </li>
+      <li>Pilih file .xpi dan izinkan pemasangan</li>
+    </ol>
+  );
+}
+
+function Checksum({ value }: { value: string | null }) {
+  if (!value) return null;
+  return (
+    <p className="text-xs break-all">
+      SHA-256: <code className="text-foreground">{value}</code>
+    </p>
+  );
+}
+
+function BrowserSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-foreground text-sm font-medium">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+function LatestDownloads({ latest }: { latest: ExtensionRelease }) {
+  return (
+    <div className="space-y-4">
+      <BrowserSection title="Chrome atau Brave, mode developer">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild>
+            <a href={latest.zipUrl} download={latest.zipName}>
+              <DownloadIcon />
+              Unduh zip {latest.tag}
+            </a>
+          </Button>
+          {latest.sha256sumsUrl ? (
+            <Button asChild variant="outline" size="sm">
+              <a href={latest.sha256sumsUrl} download="SHA256SUMS">
+                SHA256SUMS
+              </a>
+            </Button>
+          ) : null}
+        </div>
+        <Checksum value={latest.sha256} />
+        <ChromiumInstallSteps />
+      </BrowserSection>
+
+      <BrowserSection title="Firefox 140+ (XPI bertanda tangan Mozilla)">
+        {latest.xpiUrl && latest.xpiName ? (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button asChild>
+                <a href={latest.xpiUrl} download={latest.xpiName}>
+                  <DownloadIcon />
+                  Unduh xpi {latest.tag}
+                </a>
+              </Button>
+            </div>
+            <Checksum value={latest.xpiSha256} />
+            <FirefoxInstallSteps />
+          </>
+        ) : (
+          <p>
+            File .xpi belum ada di rilis ini. Build dari source lalu load
+            sementara lewat{" "}
+            <code className="text-foreground">about:debugging</code>, atau
+            tunggu rilis berikutnya.
+          </p>
+        )}
+      </BrowserSection>
+    </div>
   );
 }
 
@@ -76,7 +173,7 @@ export function DownloadExtension() {
   if (!latest) {
     return (
       <div className="space-y-2">
-        <p>Chrome atau Brave, mode developer:</p>
+        <p>Chrome, Brave, atau Firefox:</p>
         {isPending ? (
           <div className="space-y-3">
             <Skeleton className="h-9 w-40" />
@@ -91,37 +188,12 @@ export function DownloadExtension() {
 
   return (
     <div className="space-y-3">
-      <p>Chrome atau Brave, mode developer:</p>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <Button asChild>
-          <a href={latest.zipUrl} download={latest.zipName}>
-            <DownloadIcon />
-            Unduh {latest.tag}
-          </a>
-        </Button>
-        {latest.sha256sumsUrl ? (
-          <Button asChild variant="outline" size="sm">
-            <a href={latest.sha256sumsUrl} download="SHA256SUMS">
-              SHA256SUMS
-            </a>
-          </Button>
-        ) : null}
-      </div>
-
-      {latest.sha256 ? (
-        <p className="text-xs break-all">
-          SHA-256:{" "}
-          <code className="text-foreground">{latest.sha256}</code>
-        </p>
-      ) : null}
+      <LatestDownloads latest={latest} />
 
       <p className="text-xs">
         Verifikasi:{" "}
         <code className="text-foreground">sha256sum -c SHA256SUMS</code>
       </p>
-
-      <InstallSteps />
 
       {previous.length > 0 ? (
         <div className="space-y-1">
@@ -130,14 +202,24 @@ export function DownloadExtension() {
           </p>
           <ul className="space-y-1">
             {previous.slice(0, 8).map((release) => (
-              <li key={release.tag}>
+              <li key={release.tag} className="flex flex-wrap gap-x-2">
+                <span>{release.tag}</span>
                 <a
                   className="underline"
                   href={release.zipUrl}
                   download={release.zipName}
                 >
-                  {release.tag}
+                  zip
                 </a>
+                {release.xpiUrl && release.xpiName ? (
+                  <a
+                    className="underline"
+                    href={release.xpiUrl}
+                    download={release.xpiName}
+                  >
+                    xpi
+                  </a>
+                ) : null}
               </li>
             ))}
           </ul>
