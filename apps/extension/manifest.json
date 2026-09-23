@@ -29,6 +29,16 @@
         "https://rise.cakrawala.ac.id/*"
       ],
       "js": [
+        "tasks-hook.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://rise.cakrawala.ac.id/*"
+      ],
+      "js": [
         "rise.js"
       ],
       "run_at": "document_idle"
