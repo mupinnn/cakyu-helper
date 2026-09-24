@@ -137,6 +137,23 @@ export function HowToUse() {
               tulis feedback dosen jika ada yang perlu disampaikan.
             </p>
           </Step>
+
+          <Step n={5} title="Tambahkan deadline tugas ke Google Calendar">
+            <p>
+              Di dashboard RISE, kartu{" "}
+              <strong className="text-foreground">Tugas Belum Dikumpulkan</strong>{" "}
+              punya tombol{" "}
+              <strong className="text-foreground">+ Kalender</strong> di bawah
+              teks deadline. Klik untuk membuka Google Calendar dengan judul dan
+              jam deadline yang sudah terisi, lalu simpan event-nya.
+            </p>
+            <Screenshot
+              src="/add-task-to-calendar-screenshot.png"
+              alt="Kartu Tugas Belum Dikumpulkan di dashboard RISE dengan tombol + Kalender di bawah deadline"
+              caption="Dashboard RISE — klik + Kalender di bawah deadline untuk menambahkannya ke Google Calendar."
+              className="max-w-sm"
+            />
+          </Step>
         </ol>
       </CardContent>
     </Card>
