@@ -158,15 +158,17 @@ def main() -> int:
 
     file_info = file_info_from_version(match)
     file_url = file_info.get("url")
-    signed = bool(file_info.get("is_mozilla_signed_extension"))
-    file_status = file_info.get("status")
+    file_status = str(file_info.get("status") or "")
     channel = match.get("channel")
+    # is_mozilla_signed_extension is Mozilla's *internal* cert, not AMO
+    # distribution signing. Regular unlisted XPIs have this false.
+    downloadable = bool(file_url) and file_status in {"public", "unlisted"}
 
-    if not file_url or not signed:
+    if not downloadable:
         print(
             f"AMO version {version} exists (channel={channel!r}, "
-            f"file.status={file_status!r}, signed={signed}) but is not "
-            "downloadable yet. Wait for approval, then re-run.",
+            f"file.status={file_status!r}) but is not downloadable yet. "
+            "Wait for approval, then re-run.",
             file=sys.stderr,
         )
         return 2
