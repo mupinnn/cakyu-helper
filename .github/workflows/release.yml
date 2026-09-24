@@ -130,11 +130,30 @@ jobs:
           AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
           AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
           XPI: ${{ steps.version.outputs.xpi }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
           if [ -z "$AMO_API_KEY" ] || [ -z "$AMO_API_SECRET" ]; then
             echo "AMO_API_KEY and AMO_API_SECRET are required to sign the Firefox XPI"
             exit 1
+          fi
+          GECKO_ID="$(jq -r '.browser_specific_settings.gecko.id' apps/extension/manifest.json)"
+          export GECKO_ID
+          mkdir -p dist-firefox
+          set +e
+          python3 scripts/fetch-amo-xpi.py
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "Reused already-signed XPI from AMO"
+            exit 0
+          fi
+          if [ "$status" -eq 2 ]; then
+            echo "This version is still awaiting AMO review. Re-run the workflow after it is approved."
+            exit 1
+          fi
+          if [ "$status" -ne 3 ]; then
+            exit "$status"
           fi
           ./apps/extension/node_modules/.bin/web-ext sign \
             --source-dir apps/extension/dist \

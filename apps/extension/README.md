@@ -73,3 +73,5 @@ Releases sign an **unlisted** XPI on [addons.mozilla.org](https://addons.mozilla
 3. Add GitHub secrets `AMO_API_KEY` and `AMO_API_SECRET`
 
 The gecko id `cakyu-helper@13121957.xyz` is frozen after the first sign. Do not change it.
+
+If a release job times out on “Waiting for approval”, wait until the version is approved in the AMO dashboard, then re-run the Release workflow with that same version. Do not submit a new version just to get the Chrome zip out — GitHub never got a `v1.2.0` release, but AMO already has `1.2.0`.

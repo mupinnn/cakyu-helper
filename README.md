@@ -66,7 +66,9 @@ git tag v1.2.3
 git push origin v1.2.3
 ```
 
-Or run **Actions → Release → Run workflow** with `version` (e.g. `1.0.0`) on `main`. The workflow stamps `apps/extension/manifest.json`, zips `dist` for Chromium, signs an unlisted Firefox XPI via AMO, writes `firefox-updates.json` and `SHA256SUMS`, and creates a GitHub Release. The landing page picks up new releases from the GitHub API (no site redeploy).
+Or run **Actions → Release → Run workflow** with `version` (e.g. `1.0.0`) on `main`. The workflow stamps `apps/extension/manifest.json`, zips `dist` for Chromium, signs an unlisted Firefox XPI via AMO (or reuses a version AMO already signed), writes `firefox-updates.json` and `SHA256SUMS`, and creates a GitHub Release. The landing page picks up new releases from the GitHub API (no site redeploy).
+
+If Firefox signing times out while AMO is still reviewing, do **not** bump the version. After AMO approves it, re-run **Actions → Release** with the **same** version. CI will download the signed `.xpi` from AMO, build the Chrome zip, and publish both on the GitHub Release.
 
 Firefox signing needs `AMO_API_KEY` and `AMO_API_SECRET` (see secrets below). Create a [Firefox Add-on Developer](https://addons.mozilla.org/developers/) account and API credentials before the first Firefox release. The gecko id `cakyu-helper@13121957.xyz` must not change after the first sign.
 
