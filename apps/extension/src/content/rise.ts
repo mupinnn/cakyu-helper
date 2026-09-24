@@ -1,3 +1,4 @@
+import { injectDeadlineButtons } from "./tasks";
 import { openFeedbackDialog } from "./dialog";
 import {
   findPresensiRow,
@@ -52,12 +53,17 @@ function injectButtons(): void {
   }
 }
 
+function inject(): void {
+  injectButtons();
+  injectDeadlineButtons();
+}
+
 let timer = 0;
 const observer = new MutationObserver(() => {
   window.clearTimeout(timer);
-  timer = window.setTimeout(injectButtons, 250);
+  timer = window.setTimeout(inject, 250);
 });
 
-injectButtons();
+inject();
 observer.observe(document.body, { childList: true, subtree: true });
-window.addEventListener("popstate", injectButtons);
+window.addEventListener("popstate", inject);

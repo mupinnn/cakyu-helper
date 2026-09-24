@@ -1,21 +1,32 @@
 # Cakyu Helper extension
 
-Chromium/Brave extension that injects **Isi Feedback** on RISE session cards and prefills the lecture Google Form.
+Chromium/Brave and Firefox extension that injects **Isi Feedback** on RISE session cards and prefills the lecture Google Form.
 
 ## Install
 
-Download the latest zip from [cakyu-helper.13121957.xyz](https://cakyu-helper.13121957.xyz) (or [GitHub Releases](https://github.com/mupinnn/cakyu-helper/releases)). Optionally verify the checksum:
+Download the latest release from [cakyu-helper.13121957.xyz](https://cakyu-helper.13121957.xyz) (or [GitHub Releases](https://github.com/mupinnn/cakyu-helper/releases)). Optionally verify the checksum:
 
 ```bash
 sha256sum -c SHA256SUMS
 ```
 
-Then:
+### Chrome / Brave
 
 1. Unzip the archive
 2. Open `brave://extensions` or `chrome://extensions`
 3. Enable **Developer mode**
 4. **Load unpacked** → select the extracted folder (`cakyu-helper-vX.Y.Z`)
+
+### Firefox
+
+Firefox 140+ is required. Firefox unloads unsigned add-ons on restart. Use the Mozilla-signed `.xpi` from the release:
+
+1. Download `cakyu-helper-vX.Y.Z.xpi`
+2. Open `about:addons`
+3. Gear menu → **Install Add-on From File…**
+4. Select the `.xpi` and allow the installation
+
+Signed builds auto-update from GitHub Releases via `firefox-updates.json`.
 
 ## Install from source
 
@@ -26,9 +37,15 @@ nix develop -c bun install
 nix develop -c bun run --filter @cakyu-helper/extension build
 ```
 
-2. Open `brave://extensions` or `chrome://extensions`
-3. Enable **Developer mode**
-4. **Load unpacked** → select `apps/extension/dist`
+2. Chrome/Brave: open `brave://extensions` or `chrome://extensions`, enable **Developer mode**, **Load unpacked** → select `apps/extension/dist`
+
+3. Firefox (temporary, gone after restart):
+
+```bash
+nix develop -c bun run --filter @cakyu-helper/extension firefox
+```
+
+Or open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → select `apps/extension/dist/manifest.json`.
 
 ## Usage
 
@@ -46,3 +63,13 @@ Bundled from `src/shared/default-mapping.json` (Odd 2026/2027 Lectures Feedback 
 ```bash
 nix develop -c bun run --filter @cakyu-helper/extension generate:mapping
 ```
+
+## Firefox signing (maintainers)
+
+Releases sign an **unlisted** XPI on [addons.mozilla.org](https://addons.mozilla.org/developers/). One-time setup:
+
+1. Create a Firefox Add-on Developer account
+2. Generate API credentials (JWT issuer + secret)
+3. Add GitHub secrets `AMO_API_KEY` and `AMO_API_SECRET`
+
+The gecko id `cakyu-helper@13121957.xyz` is frozen after the first sign. Do not change it.

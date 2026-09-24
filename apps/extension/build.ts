@@ -5,6 +5,7 @@ const dist = join(import.meta.dir, "dist");
 mkdirSync(dist, { recursive: true });
 
 const entries = [
+  ["src/content/tasks-hook.ts", "tasks-hook.js"],
   ["src/content/rise.ts", "rise.js"],
   ["src/content/forms.ts", "forms.js"],
   ["src/background.ts", "background.js"],
@@ -18,6 +19,8 @@ for (const [entry, outfile] of entries) {
     target: "browser",
     minify: true,
     naming: outfile,
+    // The page-world hook must not leak top-level bindings onto window.
+    format: outfile === "tasks-hook.js" ? "iife" : undefined,
   });
 
   if (!result.success) {
