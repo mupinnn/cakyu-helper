@@ -17,7 +17,8 @@
   "packageManager": "bun@1.3.3",
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "bump": "bun scripts/bump.ts"
   },
   "devDependencies": {
     "turbo": "^2.8.10"
