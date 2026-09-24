@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Cakyu Helper",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Prefill lecture feedback Google Forms from RISE session cards.",
   "permissions": [
     "storage"
