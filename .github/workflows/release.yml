@@ -155,6 +155,7 @@ jobs:
           if [ "$status" -ne 3 ]; then
             exit "$status"
           fi
+          set +e
           ./apps/extension/node_modules/.bin/web-ext sign \
             --source-dir apps/extension/dist \
             --channel unlisted \
@@ -164,6 +165,21 @@ jobs:
             --upload-source-code dist-firefox/cakyu-helper-source.zip \
             --timeout 300000 \
             --approval-timeout 900000
+          sign_status=$?
+          set -e
+          if [ "$sign_status" -ne 0 ]; then
+            echo "web-ext sign failed (exit ${sign_status}); trying to download an already-signed XPI from AMO"
+            set +e
+            python3 scripts/fetch-amo-xpi.py
+            fetch_status=$?
+            set -e
+            if [ "$fetch_status" -eq 0 ]; then
+              echo "Reused already-signed XPI from AMO after sign conflict"
+              exit 0
+            fi
+            echo "Could not reuse a signed XPI. If AMO says this version already exists, wait for approval (or download the signed file from the dashboard) and re-run."
+            exit "$sign_status"
+          fi
           SIGNED="$(find dist-firefox -maxdepth 1 -name '*.xpi' | head -n 1)"
           test -n "$SIGNED"
           mv "$SIGNED" "$XPI"

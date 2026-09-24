@@ -47,12 +47,17 @@ def amo_jwt(api_key: str, api_secret: str) -> str:
     return f"{header}.{payload}.{b64url(signature)}"
 
 
-def amo_request(url: str, token: str) -> tuple[int, object | bytes]:
+def amo_request(
+    url: str,
+    token: str,
+    *,
+    accept: str = "application/json",
+) -> tuple[int, object | bytes]:
     request = urllib.request.Request(
         url,
         headers={
             "Authorization": f"JWT {token}",
-            "Accept": "application/json",
+            "Accept": accept,
             "User-Agent": "cakyu-helper-release",
         },
     )
@@ -72,18 +77,62 @@ def amo_request(url: str, token: str) -> tuple[int, object | bytes]:
         return error.code, parsed
 
 
-def version_pages(gecko_id: str, token: str):
+def addon_url(gecko_id: str, suffix: str = "") -> str:
     encoded_id = urllib.parse.quote(gecko_id, safe="")
-    url = f"{AMO_API}/addons/addon/{encoded_id}/versions/?page_size=50"
-    while url:
-        status, payload = amo_request(url, token)
-        if status == 404:
-            return
-        if status != 200 or not isinstance(payload, dict):
-            raise RuntimeError(f"AMO versions list failed ({status}): {payload}")
+    return f"{AMO_API}/addons/addon/{encoded_id}{suffix}"
+
+
+def file_info_from_version(payload: object) -> dict:
+    if not isinstance(payload, dict):
+        return {}
+    file_info = payload.get("file")
+    if isinstance(file_info, dict):
+        return file_info
+    files = payload.get("files")
+    if isinstance(files, list) and files and isinstance(files[0], dict):
+        return files[0]
+    return {}
+
+
+def fetch_version(gecko_id: str, version: str, token: str) -> dict | None:
+    status, payload = amo_request(
+        addon_url(gecko_id, f"/versions/{urllib.parse.quote(version)}/"),
+        token,
+    )
+    if status == 200 and isinstance(payload, dict):
+        return payload
+    if status not in {404, 401, 403}:
+        print(f"AMO version detail returned {status}: {payload}", file=sys.stderr)
+
+    status, payload = amo_request(
+        addon_url(
+            gecko_id,
+            "/versions/?filter=all_with_unlisted&page_size=50",
+        ),
+        token,
+    )
+    if status in {401, 403}:
+        raise RuntimeError(f"AMO rejected credentials ({status}): {payload}")
+    if status == 404 or not isinstance(payload, dict):
+        print(f"AMO versions list returned {status}: {payload}", file=sys.stderr)
+        return None
+
+    found = []
+    url: str | None = None
+    while True:
         for item in payload.get("results") or []:
-            yield item
+            found.append(str(item.get("version")))
+            if str(item.get("version")) == version:
+                return item
         url = payload.get("next")
+        if not url:
+            break
+        status, payload = amo_request(url, token)
+        if status != 200 or not isinstance(payload, dict):
+            break
+
+    print(f"AMO versions visible with all_with_unlisted: {found or '(none)'}")
+    return None
 
 
 def main() -> int:
@@ -101,36 +150,37 @@ def main() -> int:
         return 1
 
     token = amo_jwt(api_key, api_secret)
-    match = next(
-        (
-            item
-            for item in version_pages(gecko_id, token)
-            if str(item.get("version")) == version
-        ),
-        None,
-    )
+    match = fetch_version(gecko_id, version, token)
 
     if match is None:
         print(f"AMO has no version {version}; will submit for signing")
         return 3
 
-    file_info = match.get("file") or {}
+    file_info = file_info_from_version(match)
     file_url = file_info.get("url")
     signed = bool(file_info.get("is_mozilla_signed_extension"))
     file_status = file_info.get("status")
+    channel = match.get("channel")
 
     if not file_url or not signed:
         print(
-            f"AMO version {version} exists but is not signed yet "
-            f"(status={file_status!r}). Wait for approval, then re-run.",
+            f"AMO version {version} exists (channel={channel!r}, "
+            f"file.status={file_status!r}, signed={signed}) but is not "
+            "downloadable yet. Wait for approval, then re-run.",
             file=sys.stderr,
         )
         return 2
 
-    print(f"Downloading signed XPI for {version} from AMO ({file_status})")
-    status, body = amo_request(file_url, token)
+    print(
+        f"Downloading signed XPI for {version} "
+        f"(channel={channel}, status={file_status})"
+    )
+    status, body = amo_request(file_url, token, accept="*/*")
     if status != 200 or not isinstance(body, (bytes, bytearray)):
         print(f"Failed to download signed XPI ({status}): {body}", file=sys.stderr)
+        return 1
+    if len(body) < 100:
+        print(f"Downloaded XPI looks empty ({len(body)} bytes)", file=sys.stderr)
         return 1
 
     os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
